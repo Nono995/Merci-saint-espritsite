@@ -13,6 +13,9 @@ const config: Config = {
         secondary: '#d4af37',
         accent: '#0f3460',
         light: '#f5f5f5',
+        purple: '#8b5cf6',
+        'purple-dark': '#6d28d9',
+        'purple-light': '#a78bfa',
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-in-out',

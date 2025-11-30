@@ -23,7 +23,7 @@ export default function Navigation() {
   ]
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-primary/95 backdrop-blur-md z-50 border-b border-rose-500/20">
+    <nav className="fixed top-0 left-0 right-0 bg-primary/95 backdrop-blur-md z-50 border-b border-purple/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Logo />
@@ -33,7 +33,7 @@ export default function Navigation() {
               <a
                 key={item.name}
                 href={item.href}
-                className="text-light hover:text-secondary transition-colors duration-300 text-sm font-medium"
+                className="text-light hover:text-purple transition-colors duration-300 text-sm font-medium"
               >
                 {item.name}
               </a>

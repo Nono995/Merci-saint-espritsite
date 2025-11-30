@@ -31,8 +31,8 @@ export default function CTA() {
           viewport={{ once: true }}
           className="grid md:grid-cols-2 gap-8 mb-12"
         >
-          <div className="bg-white/10 backdrop-blur-md border border-secondary/30 rounded-2xl p-8 hover:border-secondary/60 transition-all duration-300 cursor-pointer hover:scale-105 transform">
-            <Heart className="w-12 h-12 text-secondary mb-4" />
+          <div className="bg-white/10 backdrop-blur-md border border-purple/30 rounded-2xl p-8 hover:border-purple/60 transition-all duration-300 cursor-pointer hover:scale-105 transform">
+            <Heart className="w-12 h-12 text-purple mb-4" />
             <h3 className="text-2xl font-bold text-light mb-3">Rejoignez-Nous</h3>
             <p className="text-light/70 mb-6">
               Venez découvrir notre communauté accueillante et chaleureuse.
@@ -42,8 +42,8 @@ export default function CTA() {
             </a>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md border border-secondary/30 rounded-2xl p-8 hover:border-secondary/60 transition-all duration-300 cursor-pointer hover:scale-105 transform">
-            <Gift className="w-12 h-12 text-secondary mb-4" />
+          <div className="bg-white/10 backdrop-blur-md border border-purple/30 rounded-2xl p-8 hover:border-purple/60 transition-all duration-300 cursor-pointer hover:scale-105 transform">
+            <Gift className="w-12 h-12 text-purple mb-4" />
             <h3 className="text-2xl font-bold text-light mb-3">Contribuer</h3>
             <p className="text-light/70 mb-6">
               Supportez notre mission et faites une différence dans nos communautés.
@@ -59,7 +59,7 @@ export default function CTA() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
           viewport={{ once: true }}
-          className="bg-white/10 backdrop-blur-md border border-secondary/30 rounded-2xl p-8"
+          className="bg-white/10 backdrop-blur-md border border-purple/30 rounded-2xl p-8"
         >
           <h3 className="text-2xl font-bold text-light mb-6 text-center">Contactez-Nous</h3>
           <div className="grid md:grid-cols-3 gap-6 text-center">
@@ -85,18 +85,18 @@ export default function CTA() {
               <input
                 type="text"
                 placeholder="Votre nom"
-                className="w-full bg-white/10 border border-light/30 rounded-lg px-4 py-3 text-light placeholder-light/50 focus:outline-none focus:border-secondary transition-colors"
+                className="w-full bg-white/10 border border-light/30 rounded-lg px-4 py-3 text-light placeholder-light/50 focus:outline-none focus:border-purple transition-colors"
               />
               <input
                 type="email"
                 placeholder="Votre email"
-                className="w-full bg-white/10 border border-light/30 rounded-lg px-4 py-3 text-light placeholder-light/50 focus:outline-none focus:border-secondary transition-colors"
+                className="w-full bg-white/10 border border-light/30 rounded-lg px-4 py-3 text-light placeholder-light/50 focus:outline-none focus:border-purple transition-colors"
               />
             </div>
             <textarea
               placeholder="Votre message"
               rows={4}
-              className="w-full bg-white/10 border border-light/30 rounded-lg px-4 py-3 text-light placeholder-light/50 focus:outline-none focus:border-secondary transition-colors resize-none"
+              className="w-full bg-white/10 border border-light/30 rounded-lg px-4 py-3 text-light placeholder-light/50 focus:outline-none focus:border-purple transition-colors resize-none"
             />
             <button
               type="submit"
