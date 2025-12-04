@@ -113,11 +113,12 @@ export default function PodcastsManagerV2() {
 
     setUploading(true)
     try {
-      let audioUrl = formData.audio_url
+      let audioUrl: string = formData.audio_url
 
       if (audioFile) {
-        audioUrl = await uploadAudio(audioFile)
-        if (!audioUrl) return
+        const uploadedUrl = await uploadAudio(audioFile)
+        if (!uploadedUrl) return
+        audioUrl = uploadedUrl
       }
 
       const { error } = await supabase
