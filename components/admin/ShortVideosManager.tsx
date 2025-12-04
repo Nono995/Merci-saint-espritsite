@@ -146,10 +146,11 @@ export default function ShortVideosManager() {
       const videoUrl = await uploadVideo(videoFile)
       if (!videoUrl) return
 
-      let thumbnailUrl = formData.thumbnail_url
+      let thumbnailUrl: string | null = formData.thumbnail_url
       if (thumbnailFile) {
-        thumbnailUrl = await uploadThumbnail(thumbnailFile)
-        if (!thumbnailUrl) return
+        const uploadedThumbnail = await uploadThumbnail(thumbnailFile)
+        if (!uploadedThumbnail) return
+        thumbnailUrl = uploadedThumbnail
       }
 
       const { error } = await supabase
@@ -190,8 +191,8 @@ export default function ShortVideosManager() {
 
     setUploading(true)
     try {
-      let videoUrl = formData.video_url
-      let thumbnailUrl = formData.thumbnail_url
+      let videoUrl: string | null = formData.video_url
+      let thumbnailUrl: string | null = formData.thumbnail_url
 
       if (videoFile) {
         videoUrl = await uploadVideo(videoFile)
