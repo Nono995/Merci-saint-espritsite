@@ -1,82 +1,72 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Play, Heart, Share2, MoreVertical } from 'lucide-react'
-import { useState } from 'react'
+import { Play, Share2 } from 'lucide-react'
 import Image from 'next/image'
 
 export default function ShortVideos() {
-  const [likes, setLikes] = useState<Record<number, number>>({})
-
   const videos = [
     {
       id: 1,
-      title: 'Mot d\'Encouragement',
-      duration: '0:45',
+      title: 'Mot d\'Encouragement du Jour',
+      duration: '2:45',
       views: '2.3K',
       creator: 'Pasteur Jean',
+      description: 'Un message puissant pour commencer votre journée avec foi et détermination.',
       imageUrl: '/images/img1.jpg',
-      placeholder: '💪',
-      color: 'from-red-500 to-red-600',
+      date: '14 Déc 2024',
     },
     {
       id: 2,
-      title: 'Verset du Jour',
-      duration: '1:12',
+      title: 'Verset du Jour Expliqué',
+      duration: '3:12',
       views: '5.1K',
       creator: 'Communauté',
+      description: 'Découvrez la signification profonde du verset biblique du jour.',
       imageUrl: '/images/img2.jpg',
-      placeholder: '📖',
-      color: 'from-green-500 to-green-600',
+      date: '13 Déc 2024',
     },
     {
       id: 3,
-      title: 'Témoignage Express',
-      duration: '0:58',
+      title: 'Témoignage Inspirant',
+      duration: '4:58',
       views: '3.8K',
       creator: 'Marie Dupont',
+      description: 'Comment la foi a transformé ma vie - un témoignage authentique.',
       imageUrl: '/images/img3.jpg',
-      placeholder: '⭐',
-      color: 'from-yellow-500 to-yellow-600',
+      date: '12 Déc 2024',
     },
     {
       id: 4,
-      title: 'Prière Rapide',
-      duration: '1:30',
+      title: 'Prière Guidée',
+      duration: '5:30',
       views: '4.2K',
       creator: 'Sophie Bernard',
+      description: 'Une prière guidée pour trouver la paix intérieure et la sérénité.',
       imageUrl: '/images/img1.jpg',
-      placeholder: '🙏',
-      color: 'from-indigo-500 to-indigo-600',
+      date: '11 Déc 2024',
     },
     {
       id: 5,
-      title: 'Conseil du Dimanche',
-      duration: '0:52',
+      title: 'Enseignement Biblique',
+      duration: '6:52',
       views: '2.9K',
       creator: 'Leadership',
+      description: 'Comprendre les principes bibliques pour une vie épanouie.',
       imageUrl: '/images/img2.jpg',
-      placeholder: '💡',
-      color: 'from-cyan-500 to-cyan-600',
+      date: '10 Déc 2024',
     },
     {
       id: 6,
-      title: 'Citation Inspirante',
-      duration: '0:35',
+      title: 'Moment de Réflexion',
+      duration: '3:35',
       views: '6.2K',
-      creator: 'Inspiration Daily',
+      creator: 'Équipe Pastorale',
+      description: 'Prenez un moment pour réfléchir sur votre parcours spirituel.',
       imageUrl: '/images/img3.jpg',
-      placeholder: '✨',
-      color: 'from-pink-500 to-pink-600',
+      date: '9 Déc 2024',
     },
   ]
-
-  const toggleLike = (id: number) => {
-    setLikes((prev) => ({
-      ...prev,
-      [id]: (prev[id] || 0) === 1 ? 0 : 1,
-    }))
-  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -92,19 +82,34 @@ export default function ShortVideos() {
   }
 
   return (
-    <section id="videos" className="py-20 bg-light">
+    <section id="videos" className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden section-pattern">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <h2 className="text-5xl font-bold text-primary mb-4">Short Videos</h2>
-          <div className="w-24 h-1 bg-rose-500 mx-auto mb-6" />
-          <p className="text-xl text-primary/70 max-w-2xl mx-auto">
-            Des contenus courts et impactants pour votre inspiration quotidienne
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="inline-block mb-6"
+          >
+            <div className="inline-flex items-center gap-2 bg-secondary/10 px-5 py-2 rounded-full">
+              <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+              <span className="text-secondary font-semibold text-sm tracking-[0.2em] uppercase">
+                Inspiration Express
+              </span>
+            </div>
+          </motion.div>
+          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+            Vidéos Courtes
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            Des moments d'inspiration rapides pour illuminer votre journée
           </p>
         </motion.div>
 
@@ -113,61 +118,82 @@ export default function ShortVideos() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
           {videos.map((video) => (
             <motion.div
               key={video.id}
               variants={itemVariants}
-              className="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-primary/5"
+              whileHover={{ scale: 1.02 }}
+              className="group relative bg-white rounded-2xl overflow-hidden shadow-soft hover:shadow-strong transition-all duration-300"
             >
-              <div className={`bg-gradient-to-br ${video.color} aspect-video flex items-center justify-center relative overflow-hidden group-hover:brightness-90 transition-all duration-300`}>
-                <div className="text-7xl">{video.placeholder}</div>
-                
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <button className="bg-rose-500 text-white p-4 rounded-full hover:bg-rose-600 transform scale-75 group-hover:scale-100 transition-all duration-300">
-                    <Play size={32} fill="white" />
+              <div className="flex flex-col sm:flex-row gap-4 p-4">
+                {/* Thumbnail */}
+                <div className="relative w-full sm:w-48 h-48 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
+                  <Image
+                    src={video.imageUrl}
+                    alt={video.title}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gray-900/30 group-hover:bg-gray-900/50 transition-colors"></div>
+                  
+                  <button className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-12 h-12 bg-white/95 rounded-full flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                      <Play size={18} className="text-gray-900 ml-0.5" fill="currentColor" />
+                    </div>
                   </button>
-                </div>
 
-                <div className="absolute top-3 right-3 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-bold">
-                  {video.duration}
-                </div>
-              </div>
-
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-primary line-clamp-2 mb-1">{video.title}</h3>
-                    <p className="text-xs text-primary/70 font-medium">{video.creator}</p>
+                  <div className="absolute bottom-2 right-2 bg-gray-900/90 text-white px-2 py-1 rounded text-[10px] font-bold">
+                    {video.duration}
                   </div>
-                  <button className="text-primary/40 hover:text-primary p-1">
-                    <MoreVertical size={18} />
-                  </button>
                 </div>
 
-                <p className="text-sm text-primary/70 mb-4">👁️ {video.views} vues</p>
+                {/* Content */}
+                <div className="flex-1 flex flex-col justify-between min-w-0">
+                  <div>
+                    <h3 className="font-display text-lg md:text-xl font-bold text-gray-900 mb-1.5 line-clamp-2 leading-tight group-hover:text-secondary transition-colors">
+                      {video.title}
+                    </h3>
+                    <p className="text-xs text-gray-600 mb-3 line-clamp-2 leading-relaxed">
+                      {video.description}
+                    </p>
+                  </div>
 
-                <div className="flex gap-3 pt-4 border-t border-primary/10">
-                  <button
-                    onClick={() => toggleLike(video.id)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold transition-all duration-300 ${
-                      likes[video.id] === 1
-                        ? 'bg-rose-500/20 text-rose-500'
-                        : 'bg-primary/10 text-primary hover:bg-primary/20'
-                    }`}
-                  >
-                    <Heart size={20} fill={likes[video.id] === 1 ? 'currentColor' : 'none'} />
-                    <span className="text-sm">J'aime</span>
-                  </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-300">
-                    <Share2 size={20} />
-                    <span className="text-sm">Partager</span>
-                  </button>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-gradient-to-br from-secondary to-rose-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
+                        {video.creator.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs text-gray-900 font-semibold truncate">{video.creator}</p>
+                        <p className="text-[10px] text-gray-500">{video.views} vues • {video.date}</p>
+                      </div>
+                    </div>
+                    <button className="text-gray-400 hover:text-secondary transition-colors flex-shrink-0 ml-2">
+                      <Share2 size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* Call to Action */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+          viewport={{ once: true }}
+          className="mt-12 text-center"
+        >
+          <button className="bg-gradient-to-r from-secondary to-rose-500 text-white font-bold px-8 py-4 rounded-xl hover:shadow-strong transition-all duration-300 transform hover:scale-105 inline-flex items-center gap-2">
+            Voir Toutes les Vidéos
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </button>
         </motion.div>
       </div>
     </section>

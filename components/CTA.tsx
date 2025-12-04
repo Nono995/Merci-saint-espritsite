@@ -18,9 +18,45 @@ export default function CTA() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-5xl font-bold text-light mb-6">Prêt à Rejoindre Notre Communauté?</h2>
-          <p className="text-xl text-light/80 leading-relaxed">
-            Que vous soyez à la recherche d'une communauté spirituelle, d'un soutien ou simplement curieux, nous vous accueillons à bras ouverts.
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="mb-6"
+          >
+            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-secondary/20 to-purple/20 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/30">
+              <div className="flex gap-1">
+                <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" />
+                <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse delay-75" />
+                <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse delay-150" />
+              </div>
+              <span className="text-light font-bold text-sm tracking-[0.2em] uppercase">
+                Rejoignez-Nous
+              </span>
+            </div>
+          </motion.div>
+          
+          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-black text-light mb-8 leading-[1.1]">
+            Prêt à Rejoindre{' '}
+            <span className="relative inline-block">
+              <span className="bg-gradient-to-r from-secondary via-purple to-secondary bg-clip-text text-transparent animate-gradient">
+                Notre Communauté
+              </span>
+              <svg className="absolute -bottom-2 left-0 w-full" height="12" viewBox="0 0 300 12" fill="none">
+                <path d="M2 10C50 5 100 2 150 5C200 8 250 3 298 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-secondary" />
+              </svg>
+            </span>
+            <span className="text-secondary">?</span>
+          </h2>
+          
+          <p className="text-lg md:text-xl text-light/95 leading-relaxed max-w-2xl mx-auto">
+            Que vous soyez à la recherche d'une{' '}
+            <span className="relative inline-block">
+              <span className="relative z-10 font-semibold text-white">communauté spirituelle</span>
+              <span className="absolute bottom-0 left-0 w-full h-2 bg-secondary/20 blur-sm" />
+            </span>
+            , d'un soutien ou simplement curieux, nous vous accueillons à bras ouverts.
           </p>
         </motion.div>
 
@@ -33,7 +69,9 @@ export default function CTA() {
         >
           <div className="bg-white/10 backdrop-blur-md border border-purple/30 rounded-2xl p-8 hover:border-purple/60 transition-all duration-300 cursor-pointer hover:scale-105 transform">
             <Heart className="w-12 h-12 text-purple mb-4" />
-            <h3 className="text-2xl font-bold text-light mb-3">Rejoignez-Nous</h3>
+            <h3 className="text-2xl md:text-3xl font-bold text-light mb-3 leading-tight">
+              Rejoignez-Nous
+            </h3>
             <p className="text-light/70 mb-6">
               Venez découvrir notre communauté accueillante et chaleureuse.
             </p>
@@ -44,7 +82,9 @@ export default function CTA() {
 
           <div className="bg-white/10 backdrop-blur-md border border-purple/30 rounded-2xl p-8 hover:border-purple/60 transition-all duration-300 cursor-pointer hover:scale-105 transform">
             <Gift className="w-12 h-12 text-purple mb-4" />
-            <h3 className="text-2xl font-bold text-light mb-3">Contribuer</h3>
+            <h3 className="text-2xl md:text-3xl font-bold text-light mb-3 leading-tight">
+              Contribuer
+            </h3>
             <p className="text-light/70 mb-6">
               Supportez notre mission et faites une différence dans nos communautés.
             </p>
@@ -61,7 +101,17 @@ export default function CTA() {
           viewport={{ once: true }}
           className="bg-white/10 backdrop-blur-md border border-purple/30 rounded-2xl p-8"
         >
-          <h3 className="text-2xl font-bold text-light mb-6 text-center">Contactez-Nous</h3>
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+              <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" />
+              <span className="text-secondary font-semibold text-xs tracking-[0.2em] uppercase">
+                Contact
+              </span>
+            </div>
+            <h3 className="font-display text-3xl md:text-4xl font-bold text-light">
+              Contactez-Nous
+            </h3>
+          </div>
           <div className="grid md:grid-cols-3 gap-6 text-center">
             <div>
               <p className="text-light/70 text-sm mb-2">Adresse</p>

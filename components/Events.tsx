@@ -63,9 +63,24 @@ export default function Events() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl font-bold text-light mb-4">Événements à Venir</h2>
-          <div className="w-24 h-1 bg-secondary mx-auto mb-6" />
-          <p className="text-xl text-light/80 max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="inline-block mb-6"
+          >
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-5 py-2 rounded-full border border-white/20">
+              <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+              <span className="text-secondary font-semibold text-sm tracking-[0.2em] uppercase">
+                Agenda
+              </span>
+            </div>
+          </motion.div>
+          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-light mb-6 leading-tight">
+            Événements à Venir
+          </h2>
+          <p className="text-xl text-light/90 max-w-3xl mx-auto leading-relaxed">
             Découvrez nos événements spéciaux et marquez votre calendrier
           </p>
         </motion.div>
@@ -99,7 +114,9 @@ export default function Events() {
                       <Calendar className="w-5 h-5 text-secondary" />
                       <span className="text-secondary font-semibold">{event.date}</span>
                     </div>
-                    <h3 className="text-2xl font-bold text-light mb-3">{event.title}</h3>
+                    <h3 className="text-2xl md:text-3xl font-bold text-light mb-3 leading-tight">
+                  {event.title}
+                </h3>
                     <p className="text-light/70 mb-4">{event.description}</p>
                   </div>
                   <div className="flex items-center justify-between">

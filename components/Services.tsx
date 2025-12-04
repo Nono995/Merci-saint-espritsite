@@ -1,8 +1,7 @@
 'use client'
 
-
 import { motion } from 'framer-motion'
-import { Clock, MapPin, Users, BookOpen } from 'lucide-react'
+import { Clock, MapPin } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
@@ -18,11 +17,6 @@ interface PageHeading {
   id: string
   title: string
   description: string
-}
-
-interface Settings {
-  setting_key: string
-  setting_value: string
 }
 
 export default function Services() {
@@ -82,51 +76,106 @@ export default function Services() {
   }
 
   return (
-    <section id="services" className="py-20 bg-light">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="services" className="py-24 bg-white relative overflow-hidden">
+      <div className="absolute inset-0 section-pattern opacity-50"></div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
-          <h2 className="text-5xl font-bold text-primary mb-4">{servicesHeading?.title || 'Nos Services'}</h2>
-          <div className="w-24 h-1 bg-secondary mx-auto mb-6" />
-          <p className="text-xl text-primary/70 max-w-2xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="inline-block mb-6"
+          >
+            <div className="inline-flex items-center gap-2 bg-secondary/10 px-5 py-2 rounded-full">
+              <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+              <span className="text-secondary font-semibold text-sm tracking-[0.2em] uppercase">
+                Nos Horaires
+              </span>
+            </div>
+          </motion.div>
+          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+            {servicesHeading?.title || 'Nos Services'}
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             {servicesHeading?.description || 'Différents services pour différents besoins spirituels'}
           </p>
         </motion.div>
 
         {loading ? (
-          <div className="text-center text-primary">Chargement...</div>
+          <div className="text-center text-gray-600">Chargement...</div>
         ) : (
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid md:grid-cols-3 gap-8"
+            className="grid md:grid-cols-2 gap-6 mb-16"
           >
             {services.map((service) => (
               <motion.div
                 key={service.id}
                 variants={itemVariants}
-                whileHover={{ y: -10 }}
-                className="bg-white rounded-xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-l-4 border-secondary"
+                whileHover={{ y: -6 }}
+                className="group relative bg-gradient-to-br from-white to-gray-50 rounded-3xl p-8 shadow-soft hover:shadow-strong transition-all duration-300 border border-gray-100 overflow-hidden"
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <Clock className="w-8 h-8 text-secondary" />
-                  <div>
-                    <p className="text-sm font-semibold text-primary/70">{service.day}</p>
-                    <p className="text-lg font-bold text-secondary">{service.time}</p>
+                {/* Background Decoration */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-br from-secondary/20 to-rose-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
+                
+                {/* Day & Time Header */}
+                <div className="relative z-10 flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-secondary to-rose-500 rounded-2xl flex items-center justify-center shadow-medium">
+                      <Clock className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{service.day}</p>
+                      <p className="text-xl font-black text-gray-900">{service.time}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Badge */}
+                  <div className="px-3 py-1.5 bg-secondary/10 rounded-full">
+                    <p className="text-xs font-bold text-secondary uppercase">Actif</p>
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-primary mb-3">{service.title}</h3>
-                <p className="text-primary/60 leading-relaxed">{service.description}</p>
-                <a href="#contact" className="mt-6 w-full bg-secondary/10 text-secondary font-semibold py-2 rounded-lg hover:bg-secondary hover:text-primary transition-all duration-300 inline-block text-center">
-                  En savoir plus
-                </a>
+
+                {/* Title */}
+                <h3 className="relative z-10 font-display text-2xl md:text-3xl font-bold text-gray-900 mb-4 group-hover:text-secondary transition-colors leading-tight">
+                  {service.title}
+                </h3>
+
+                {/* Description */}
+                <p className="relative z-10 text-gray-600 leading-relaxed mb-6">
+                  {service.description}
+                </p>
+
+                {/* Footer */}
+                <div className="relative z-10 flex items-center justify-between pt-6 border-t border-gray-200">
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-secondary to-rose-500 border-2 border-white"></div>
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-purple border-2 border-white"></div>
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple to-purple-dark border-2 border-white"></div>
+                    </div>
+                    <span className="text-sm text-gray-600 font-medium">+50 participants</span>
+                  </div>
+                  
+                  <a 
+                    href="#contact" 
+                    className="text-secondary hover:text-rose-500 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </a>
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -137,16 +186,33 @@ export default function Services() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
           viewport={{ once: true }}
-          className="mt-16 bg-gradient-to-r from-primary to-accent rounded-2xl p-12 text-center text-light"
+          className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-12 text-center text-white overflow-hidden shadow-strong"
         >
-          <h3 className="text-3xl font-bold mb-4">Localisation</h3>
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <MapPin className="w-6 h-6 text-secondary" />
-            <p className="text-lg">{location}</p>
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 left-10 w-64 h-64 bg-secondary rounded-full blur-3xl"></div>
+            <div className="absolute bottom-10 right-10 w-64 h-64 bg-rose-500 rounded-full blur-3xl"></div>
           </div>
-          <button className="bg-secondary text-primary font-bold px-8 py-3 rounded-lg hover:bg-secondary/90 transition-all duration-300 mt-4">
-            Voir sur la carte
-          </button>
+          
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
+              <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" />
+              <span className="text-secondary font-semibold text-xs tracking-[0.2em] uppercase">
+                Localisation
+              </span>
+            </div>
+            <h3 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white leading-tight">
+              Venez Nous Rendre Visite
+            </h3>
+            <div className="flex items-center justify-center gap-3 mb-8">
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <MapPin className="w-6 h-6 text-secondary" />
+              </div>
+              <p className="text-lg text-white/90">{location}</p>
+            </div>
+            <button className="bg-gradient-to-r from-secondary to-rose-500 text-white font-bold px-10 py-4 rounded-xl hover:shadow-strong transition-all duration-300 transform hover:scale-105">
+              Voir sur la carte
+            </button>
+          </div>
         </motion.div>
       </div>
     </section>

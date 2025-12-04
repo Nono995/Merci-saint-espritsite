@@ -21,6 +21,7 @@ export default function Hero() {
     }, 5000)
     return () => clearInterval(timer)
   }, [biblicalVerses.length])
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -54,74 +55,125 @@ export default function Hero() {
   return (
     <section
       id="home"
-      className="relative w-full min-h-screen bg-light overflow-hidden"
+      className="relative w-full min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 overflow-hidden"
     >
       <div className="absolute inset-0 lg:flex">
-        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-br from-primary via-primary/90 to-accent" />
+        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
         
         <svg
-          className="absolute hidden lg:block right-1/2 top-0 bottom-0 w-32 h-full text-light"
+          className="absolute hidden lg:block right-1/2 top-0 bottom-0 w-32 h-full text-white"
           viewBox="0 0 100 1000"
           preserveAspectRatio="none"
-          style={{ filter: 'drop-shadow(4px 0 12px rgba(0,0,0,0.15))' }}
+          style={{ filter: 'drop-shadow(4px 0 20px rgba(0,0,0,0.1))' }}
         >
           <polygon points="100,0 0,0 100,1000" fill="white" />
         </svg>
 
-        <div className="absolute hidden lg:block inset-y-0 right-0 opacity-20">
-          <div className="absolute top-20 right-20 w-96 h-96 bg-secondary rounded-full mix-blend-multiply filter blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-40 w-80 h-80 bg-accent rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-1000" />
+        <div className="absolute hidden lg:block inset-y-0 right-0 opacity-30">
+          <div className="absolute top-20 right-20 w-96 h-96 bg-gradient-to-br from-secondary to-rose-500 rounded-full mix-blend-multiply filter blur-3xl animate-float" />
+          <div className="absolute bottom-20 right-40 w-80 h-80 bg-gradient-to-br from-accent to-purple rounded-full mix-blend-multiply filter blur-3xl animate-float" style={{ animationDelay: '2s' }} />
         </div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto min-h-screen lg:h-screen flex flex-col lg:flex-row items-center py-8 lg:py-0">
         <motion.div
-          className="w-full lg:w-1/2 px-4 sm:px-6 lg:px-12 pt-24 sm:pt-32 lg:pt-0 lg:py-0 flex flex-col justify-center items-center lg:items-start"
+          className="w-full lg:w-1/2 px-6 sm:px-6 lg:px-12 pt-24 sm:pt-32 lg:pt-0 flex flex-col justify-center items-center lg:items-start"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.div variants={itemVariants} className="mb-6 lg:mb-3">
-            <span className="inline-block text-rose-600 font-bold text-xs tracking-widest uppercase px-3 py-1 bg-rose-100 rounded-full border border-rose-300">
-              ✨ Bienvenue
-            </span>
+          <motion.div variants={itemVariants} className="mb-6 lg:mb-10">
+            <motion.span 
+              className="inline-flex items-center gap-2 text-rose-600 font-bold text-xs sm:text-sm tracking-wider uppercase px-4 sm:px-5 py-2 sm:py-3 bg-gradient-to-r from-rose-50 to-orange-50 rounded-full border border-rose-200/50 shadow-soft relative overflow-hidden"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400 }}
+            >
+              <motion.span
+                animate={{ 
+                  rotate: [0, 10, -10, 10, 0],
+                  scale: [1, 1.2, 1, 1.2, 1]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 3
+                }}
+              >
+                ✨
+              </motion.span>
+              <span className="relative z-10">Bienvenue</span>
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-rose-100 to-orange-100"
+                initial={{ x: '-100%' }}
+                animate={{ x: '100%' }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  repeatDelay: 2,
+                  ease: "easeInOut"
+                }}
+              />
+            </motion.span>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="mb-5 lg:mb-6 w-full">
-            <div className="flex flex-col items-center lg:items-start gap-0">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-primary leading-tight">
+          <motion.div variants={itemVariants} className="mb-6 lg:mb-8 w-full">
+            <div className="flex flex-col items-center lg:items-start gap-1">
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight tracking-tight whitespace-nowrap">
                 Merci Saint-Esprit
               </h1>
-              <div className="flex justify-center lg:justify-start w-full pl-[48%] sm:pl-[55%] lg:pl-[60%]">
-                <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-rose-500 mt-1">
+              <div className="flex justify-center lg:justify-start w-full pl-[55%] sm:pl-[58%] lg:pl-[60%]">
+                <p className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-secondary via-rose-500 to-rose-600 bg-clip-text text-transparent">
                   Église
                 </p>
               </div>
             </div>
           </motion.div>
 
+          {/* Decorative Line */}
+          <motion.div 
+            variants={itemVariants}
+            className="flex items-center gap-3 mb-6 lg:mb-8 w-full justify-center lg:justify-start"
+          >
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-secondary"></div>
+            <div className="w-2 h-2 rounded-full bg-secondary"></div>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-secondary"></div>
+          </motion.div>
+
           <motion.p
             variants={itemVariants}
-            className="text-sm sm:text-base text-primary/70 mb-6 lg:mb-8 leading-relaxed max-w-lg text-center lg:text-left"
+            className="text-base sm:text-lg text-gray-600 mb-8 lg:mb-10 leading-relaxed max-w-lg text-center lg:text-left font-light"
           >
             Une communauté accueillante où la foi, l'espérance et la charité se vivent au quotidien. Rejoignez-nous pour des services inspirants et une croissance spirituelle profonde.
           </motion.p>
 
+
+
           <motion.div
             variants={itemVariants}
-            className="hidden lg:flex flex-col sm:flex-row gap-6 justify-center lg:justify-start w-full sm:w-auto"
+            className="hidden lg:flex flex-col sm:flex-row gap-4 justify-center lg:justify-start w-full sm:w-auto"
           >
             <a
               href="#contact"
-              className="bg-gradient-to-r from-secondary to-rose-500 text-primary font-bold text-lg px-10 py-4 rounded-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 inline-block text-center shadow-lg"
+              className="group relative bg-gradient-to-r from-secondary to-rose-500 text-white font-bold text-base px-8 py-4 rounded-xl hover:shadow-strong transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center gap-2 overflow-hidden"
             >
-              Nous Rejoindre
+              <span className="relative z-10">Nous Rejoindre</span>
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+              <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="hidden lg:block mt-3 lg:mt-12 text-sm text-primary/50 text-center lg:text-left">
-            <p>Rejoignez notre communauté de plus de 500 membres</p>
+          <motion.div variants={itemVariants} className="hidden lg:flex items-center gap-3 mt-8 lg:mt-12 text-sm text-gray-500 text-center lg:text-left">
+            <div className="flex -space-x-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-secondary to-rose-500 border-2 border-white"></div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-purple border-2 border-white"></div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple to-purple-dark border-2 border-white"></div>
+            </div>
+            <p className="font-medium">Rejoignez <span className="text-gray-900 font-bold">500+</span> membres</p>
           </motion.div>
+
+
         </motion.div>
 
         <motion.div
@@ -130,20 +182,22 @@ export default function Hero() {
           initial="hidden"
           animate="visible"
         >
-          <div className="relative w-full h-[380px] sm:h-[420px] sm:max-w-2xl lg:max-w-none lg:w-5/6 lg:h-[420px]">
+          <div className="relative w-full h-[380px] sm:h-[420px] sm:max-w-2xl lg:max-w-none lg:w-5/6 lg:h-[480px]">
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-rose-500/20 rounded-3xl blur-2xl transform scale-105"></div>
+            
             <Image
               src="/images/img5.jpg"
               alt="Merci Saint-Esprit Église"
               fill
-              className="object-cover rounded-3xl relative z-10"
+              className="object-cover rounded-3xl relative z-10 shadow-strong"
               priority
               sizes="(max-width: 768px) 90vw, 50vw"
             />
             
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-primary/50 via-transparent to-transparent z-20" />
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-t from-gray-900/60 via-gray-900/20 to-transparent z-20" />
             
             <motion.div
-              className="absolute -bottom-6 left-0 right-0 mx-auto w-11/12 bg-gradient-to-r from-primary/95 to-primary/90 rounded-xl p-3 shadow-lg backdrop-blur-sm border border-primary/20 z-30"
+              className="absolute -bottom-6 left-0 right-0 mx-auto w-11/12 glass-dark rounded-2xl p-4 shadow-strong border border-white/20 z-30"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
@@ -157,24 +211,24 @@ export default function Hero() {
                   transition={{ duration: 0.5 }}
                   className="w-full"
                 >
-                  <p className="text-light text-xs sm:text-sm font-light italic mb-1 leading-snug">
+                  <p className="text-white text-xs sm:text-sm font-light italic mb-2 leading-relaxed">
                     "{biblicalVerses[currentSlide].text}"
                   </p>
-                  <p className="text-rose-200 text-xs font-semibold">
+                  <p className="text-secondary text-xs font-semibold">
                     — {biblicalVerses[currentSlide].reference}
                   </p>
                 </motion.div>
               </div>
 
-              <div className="flex justify-center gap-1.5 mt-2">
+              <div className="flex justify-center gap-2 mt-3">
                 {biblicalVerses.map((_, index) => (
                   <motion.button
                     key={index}
                     onClick={() => setCurrentSlide(index)}
                     className={`h-1.5 rounded-full transition-all duration-300 ${
                       index === currentSlide
-                        ? 'bg-rose-400 w-4'
-                        : 'bg-light/40 w-1.5 hover:bg-light/60'
+                        ? 'bg-gradient-to-r from-secondary to-rose-500 w-8'
+                        : 'bg-white/30 w-1.5 hover:bg-white/50'
                     }`}
                     whileHover={{ scale: 1.2 }}
                   />
@@ -182,28 +236,37 @@ export default function Hero() {
               </div>
             </motion.div>
             
-            <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-secondary/20 rounded-full blur-3xl -z-10 hidden lg:block" />
+            <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-gradient-to-br from-secondary/30 to-rose-500/30 rounded-full blur-3xl -z-10 hidden lg:block animate-float" />
           </div>
 
           <motion.div
             variants={itemVariants}
-            className="lg:hidden flex flex-col sm:flex-row gap-6 justify-center w-full sm:w-auto mt-8"
+            className="lg:hidden flex flex-col sm:flex-row gap-4 justify-center w-full sm:w-auto mt-8"
           >
             <a
               href="#contact"
-              className="bg-gradient-to-r from-secondary to-rose-500 text-primary font-bold text-lg px-10 py-4 rounded-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 inline-block text-center shadow-lg"
+              className="group relative bg-gradient-to-r from-secondary to-rose-500 text-white font-bold text-base px-8 py-4 rounded-xl hover:shadow-strong transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center gap-2 overflow-hidden"
             >
-              Nous Rejoindre
+              <span className="relative z-10">Nous Rejoindre</span>
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+              <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </a>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="lg:hidden mt-4 text-sm text-primary/50 text-center">
-            <p>Rejoignez notre communauté de plus de 500 membres</p>
+          <motion.div variants={itemVariants} className="lg:hidden flex items-center justify-center gap-3 mt-6 text-sm text-gray-500">
+            <div className="flex -space-x-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-secondary to-rose-500 border-2 border-white"></div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-purple border-2 border-white"></div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple to-purple-dark border-2 border-white"></div>
+            </div>
+            <p className="font-medium">Rejoignez <span className="text-gray-900 font-bold">500+</span> membres</p>
           </motion.div>
+
+
         </motion.div>
       </div>
-
-
 
       <motion.div
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20"
