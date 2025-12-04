@@ -83,8 +83,8 @@ export default function PodcastsManagerV2() {
 
     setUploading(true)
     try {
-      const audioUrl = await uploadAudio(audioFile)
-      if (!audioUrl) return
+      const uploadedUrl = await uploadAudio(audioFile)
+      if (!uploadedUrl) return
 
       const { error } = await supabase
         .from('podcasts')
@@ -92,7 +92,7 @@ export default function PodcastsManagerV2() {
           {
             title: formData.title,
             description: formData.description,
-            audio_url: audioUrl,
+            audio_url: uploadedUrl,
           },
         ])
 
