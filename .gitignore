@@ -1,1 +1,10 @@
 node_modules
+.next/
+out/
+build/
+.env*.local
+.vercel
+*.log
+test-results/
+playwright-report/
+.DS_Store

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Plus, Trash2, Edit2, X, Check } from 'lucide-react'
+import { Heart, Users, BookOpen, Star, Zap, Award, Target, Smile } from 'lucide-react'
 
 interface Feature {
   id: string
@@ -11,12 +13,24 @@ interface Feature {
   order_index: number
 }
 
-const icons = ['Heart', 'Users', 'BookOpen', 'Star', 'Zap', 'Award', 'Target', 'Smile']
+const iconMap: Record<string, any> = {
+  Heart,
+  Users,
+  BookOpen,
+  Star,
+  Zap,
+  Award,
+  Target,
+  Smile,
+}
+
+const icons = Object.keys(iconMap)
 
 export default function FeaturesManager() {
   const [features, setFeatures] = useState<Feature[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -24,6 +38,7 @@ export default function FeaturesManager() {
     order_index: 0,
   })
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   useEffect(() => {
     fetchFeatures()
@@ -47,15 +62,23 @@ export default function FeaturesManager() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.title) return
+    if (!formData.title.trim()) {
+      setError('Le titre est requis')
+      return
+    }
 
     try {
-      const { error } = await supabase
-        .from('features')
-        .insert([formData])
+      const newFeature = {
+        ...formData,
+        order_index: features.length,
+      }
+      const { error } = await supabase.from('features').insert([newFeature])
 
       if (error) throw error
       setFormData({ title: '', description: '', icon_name: 'Heart', order_index: 0 })
+      setShowForm(false)
+      setSuccess('Feature ajoutée avec succès')
+      setTimeout(() => setSuccess(''), 3000)
       fetchFeatures()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur')
@@ -75,6 +98,8 @@ export default function FeaturesManager() {
       if (error) throw error
       setEditingId(null)
       setFormData({ title: '', description: '', icon_name: 'Heart', order_index: 0 })
+      setSuccess('Feature mise à jour avec succès')
+      setTimeout(() => setSuccess(''), 3000)
       fetchFeatures()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur')
@@ -82,15 +107,14 @@ export default function FeaturesManager() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Êtes-vous sûr?')) return
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette feature?')) return
 
     try {
-      const { error } = await supabase
-        .from('features')
-        .delete()
-        .eq('id', id)
+      const { error } = await supabase.from('features').delete().eq('id', id)
 
       if (error) throw error
+      setSuccess('Feature supprimée')
+      setTimeout(() => setSuccess(''), 3000)
       fetchFeatures()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur')
@@ -105,112 +129,197 @@ export default function FeaturesManager() {
       icon_name: feature.icon_name,
       order_index: feature.order_index,
     })
+    setShowForm(true)
   }
 
-  if (loading) return <div>Chargement...</div>
+  const resetForm = () => {
+    setEditingId(null)
+    setFormData({ title: '', description: '', icon_name: 'Heart', order_index: 0 })
+    setShowForm(false)
+    setError('')
+  }
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+    </div>
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {error && (
-        <div className="bg-red-900 text-red-100 p-4 rounded-lg">{error}</div>
+        <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <span className="text-lg">⚠️</span>
+          <span>{error}</span>
+          <button onClick={() => setError('')} className="ml-auto">
+            <X size={18} />
+          </button>
+        </div>
       )}
 
-      <form
-        onSubmit={editingId ? handleUpdate : handleAdd}
-        className="bg-gray-700 p-6 rounded-lg space-y-4"
-      >
-        <h2 className="text-xl font-bold text-purple">
-          {editingId ? 'Modifier' : 'Ajouter'} une Feature
-        </h2>
-
-        <input
-          type="text"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className="w-full bg-gray-600 text-white border border-gray-500 rounded-lg p-3 focus:outline-none focus:border-purple"
-          placeholder="Titre (ex: Foi Authentique)"
-          required
-        />
-
-        <textarea
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full bg-gray-600 text-white border border-gray-500 rounded-lg p-3 focus:outline-none focus:border-purple"
-          placeholder="Description"
-          rows={3}
-        />
-
-        <select
-          value={formData.icon_name}
-          onChange={(e) => setFormData({ ...formData, icon_name: e.target.value })}
-          className="w-full bg-gray-600 text-white border border-gray-500 rounded-lg p-3 focus:outline-none focus:border-purple"
-        >
-          {icons.map((icon) => (
-            <option key={icon} value={icon}>
-              {icon}
-            </option>
-          ))}
-        </select>
-
-        <input
-          type="number"
-          value={formData.order_index}
-          onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) })}
-          className="w-full bg-gray-600 text-white border border-gray-500 rounded-lg p-3 focus:outline-none focus:border-purple"
-          placeholder="Ordre d'affichage"
-        />
-
-        <div className="flex gap-4">
-          <button
-            type="submit"
-            className="bg-purple hover:bg-purple-dark px-6 py-2 rounded-lg font-semibold transition"
-          >
-            {editingId ? 'Mettre à jour' : 'Ajouter'}
-          </button>
-          {editingId && (
-            <button
-              type="button"
-              onClick={() => {
-                setEditingId(null)
-                setFormData({ title: '', description: '', icon_name: 'Heart', order_index: 0 })
-              }}
-              className="bg-gray-600 hover:bg-gray-500 px-6 py-2 rounded-lg font-semibold transition"
-            >
-              Annuler
-            </button>
-          )}
+      {success && (
+        <div className="flex items-center gap-3 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <Check size={18} />
+          <span>{success}</span>
         </div>
-      </form>
+      )}
 
-      <div className="space-y-3">
-        <h3 className="text-lg font-bold">Features ({features.length})</h3>
-        {features.map((feature) => (
-          <div
-            key={feature.id}
-            className="bg-gray-700 p-4 rounded-lg flex justify-between items-start gap-4"
-          >
-            <div className="flex-1">
-              <p className="text-xs text-purple mb-1">Ordre: {feature.order_index}</p>
-              <h4 className="font-bold text-white mb-1">{feature.title}</h4>
-              <p className="text-sm text-gray-300 mb-1">{feature.description}</p>
-              <p className="text-xs text-gray-400">Icône: {feature.icon_name}</p>
+      {!showForm && (
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+        >
+          <Plus size={20} />
+          Ajouter une Feature
+        </button>
+      )}
+
+      {showForm && (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <h3 className="text-xl font-bold text-gray-900 mb-6">
+            {editingId ? '✏️ Modifier la Feature' : '➕ Ajouter une Feature'}
+          </h3>
+
+          <form onSubmit={editingId ? handleUpdate : handleAdd} className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Titre *
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="ex: Foi Authentique"
+                required
+              />
             </div>
-            <div className="flex gap-2">
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Décrivez cette feature..."
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Icône
+                </label>
+                <select
+                  value={formData.icon_name}
+                  onChange={(e) => setFormData({ ...formData, icon_name: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  {icons.map((icon) => (
+                    <option key={icon} value={icon}>
+                      {icon}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Ordre d'affichage
+                </label>
+                <input
+                  type="number"
+                  value={formData.order_index}
+                  onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
               <button
-                onClick={() => startEdit(feature)}
-                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm"
+                type="submit"
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
               >
-                Éditer
+                <Check size={18} />
+                {editingId ? 'Mettre à jour' : 'Ajouter'}
               </button>
               <button
-                onClick={() => handleDelete(feature.id)}
-                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm"
+                type="button"
+                onClick={resetForm}
+                className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-900 px-6 py-2 rounded-lg font-semibold transition-colors"
               >
-                Supprimer
+                <X size={18} />
+                Annuler
               </button>
             </div>
+          </form>
+        </div>
+      )}
+
+      <div>
+        <h3 className="text-lg font-bold text-gray-900 mb-4">
+          Features ({features.length})
+        </h3>
+
+        {features.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+            <p className="text-gray-600">Aucune feature pour le moment</p>
           </div>
-        ))}
+        ) : (
+          <div className="grid gap-4">
+            {features.map((feature) => {
+              const Icon = iconMap[feature.icon_name] || Heart
+              return (
+                <div
+                  key={feature.id}
+                  className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <Icon className="w-6 h-6 text-indigo-600" />
+                      </div>
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-bold text-gray-900 text-lg">{feature.title}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{feature.description}</p>
+                          <div className="mt-3 flex gap-4 text-xs text-gray-500">
+                            <span>Icône: {feature.icon_name}</span>
+                            <span>Ordre: {feature.order_index}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => startEdit(feature)}
+                            className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"
+                            title="Éditer"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(feature.id)}
+                            className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"
+                            title="Supprimer"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

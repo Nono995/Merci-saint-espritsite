@@ -4,9 +4,21 @@ import { motion } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+
+interface HeroContent {
+  welcome_text: string
+  church_name: string
+  church_subtitle: string
+  description: string
+  cta_text: string
+  hero_image_url: string
+  members_count: string
+}
 
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [heroContent, setHeroContent] = useState<HeroContent | null>(null)
 
   const biblicalVerses = [
     { text: "Car Dieu a tant aimé le monde qu'il a donné son Fils unique, afin que quiconque croit en lui ne périsse point.", reference: "Jean 3:16" },
@@ -16,11 +28,35 @@ export default function Hero() {
   ]
 
   useEffect(() => {
+    fetchHeroContent()
+  }, [])
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % biblicalVerses.length)
     }, 5000)
     return () => clearInterval(timer)
   }, [biblicalVerses.length])
+
+  const fetchHeroContent = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('hero_content')
+        .select('*')
+        .single()
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Erreur fetch hero:', error)
+        return
+      }
+
+      if (data) {
+        setHeroContent(data)
+      }
+    } catch (err) {
+      console.error('Erreur:', err)
+    }
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -101,7 +137,7 @@ export default function Hero() {
               >
                 ✨
               </motion.span>
-              <span className="relative z-10">Bienvenue</span>
+              <span className="relative z-10">{heroContent?.welcome_text || 'Bienvenue'}</span>
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-rose-100 to-orange-100"
                 initial={{ x: '-100%' }}
@@ -119,11 +155,11 @@ export default function Hero() {
           <motion.div variants={itemVariants} className="mb-6 lg:mb-8 w-full">
             <div className="flex flex-col items-center lg:items-start gap-1">
               <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight tracking-tight whitespace-nowrap">
-                Merci Saint-Esprit
+                {heroContent?.church_name || 'Merci Saint-Esprit'}
               </h1>
               <div className="flex justify-center lg:justify-start w-full pl-[55%] sm:pl-[58%] lg:pl-[60%]">
                 <p className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-secondary via-rose-500 to-rose-600 bg-clip-text text-transparent">
-                  Église
+                  {heroContent?.church_subtitle || 'Église'}
                 </p>
               </div>
             </div>
@@ -143,7 +179,7 @@ export default function Hero() {
             variants={itemVariants}
             className="text-base sm:text-lg text-gray-600 mb-8 lg:mb-10 leading-relaxed max-w-lg text-center lg:text-left font-light"
           >
-            Une communauté accueillante où la foi, l'espérance et la charité se vivent au quotidien. Rejoignez-nous pour des services inspirants et une croissance spirituelle profonde.
+            {heroContent?.description || 'Une communauté accueillante où la foi, l\'espérance et la charité se vivent au quotidien. Rejoignez-nous pour des services inspirants et une croissance spirituelle profonde.'}
           </motion.p>
 
 
@@ -156,7 +192,7 @@ export default function Hero() {
               href="#contact"
               className="group relative bg-gradient-to-r from-secondary to-rose-500 text-white font-bold text-base px-8 py-4 rounded-xl hover:shadow-strong transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center gap-2 overflow-hidden"
             >
-              <span className="relative z-10">Nous Rejoindre</span>
+              <span className="relative z-10">{heroContent?.cta_text || 'Nous Rejoindre'}</span>
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -170,7 +206,7 @@ export default function Hero() {
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-purple border-2 border-white"></div>
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple to-purple-dark border-2 border-white"></div>
             </div>
-            <p className="font-medium">Rejoignez <span className="text-gray-900 font-bold">500+</span> membres</p>
+            <p className="font-medium">Rejoignez <span className="text-gray-900 font-bold">{heroContent?.members_count || '500+'}</span> membres</p>
           </motion.div>
 
 
@@ -186,7 +222,7 @@ export default function Hero() {
             <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-rose-500/20 rounded-3xl blur-2xl transform scale-105"></div>
             
             <Image
-              src="/images/img5.jpg"
+              src={heroContent?.hero_image_url || '/images/img5.jpg'}
               alt="Merci Saint-Esprit Église"
               fill
               className="object-cover rounded-3xl relative z-10 shadow-strong"
@@ -247,7 +283,7 @@ export default function Hero() {
               href="#contact"
               className="group relative bg-gradient-to-r from-secondary to-rose-500 text-white font-bold text-base px-8 py-4 rounded-xl hover:shadow-strong transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center gap-2 overflow-hidden"
             >
-              <span className="relative z-10">Nous Rejoindre</span>
+              <span className="relative z-10">{heroContent?.cta_text || 'Nous Rejoindre'}</span>
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -261,7 +297,7 @@ export default function Hero() {
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-purple border-2 border-white"></div>
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple to-purple-dark border-2 border-white"></div>
             </div>
-            <p className="font-medium">Rejoignez <span className="text-gray-900 font-bold">500+</span> membres</p>
+            <p className="font-medium">Rejoignez <span className="text-gray-900 font-bold">{heroContent?.members_count || '500+'}</span> membres</p>
           </motion.div>
 
 

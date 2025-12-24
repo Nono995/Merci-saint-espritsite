@@ -9,19 +9,32 @@ interface ShortVideo {
   title: string
   description: string
   video_url: string
+  youtube_url: string
   thumbnail_url: string
   duration_seconds: number
   creator: string
+}
+
+const extractYoutubeVideoId = (url: string): string | null => {
+  const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/
+  const match = url.match(regex)
+  return match ? match[1] : null
+}
+
+const getYoutubeThumbnail = (videoId: string): string => {
+  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
 }
 
 export default function ShortVideosManager() {
   const [videos, setVideos] = useState<ShortVideo[]>([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [videoType, setVideoType] = useState<'upload' | 'youtube'>('upload')
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     video_url: '',
+    youtube_url: '',
     thumbnail_url: '',
     duration_seconds: 30,
     creator: '',
@@ -83,6 +96,17 @@ export default function ShortVideosManager() {
     }
   }
 
+  const handleYoutubeUrlChange = (url: string) => {
+    setFormData({ ...formData, youtube_url: url })
+    setError('')
+
+    const videoId = extractYoutubeVideoId(url)
+    if (videoId) {
+      const thumbnail = getYoutubeThumbnail(videoId)
+      setFormData((prev) => ({ ...prev, thumbnail_url: thumbnail }))
+    }
+  }
+
   const handleThumbnailFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
       const file = e.target.files[0]
@@ -136,15 +160,33 @@ export default function ShortVideosManager() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.title || !videoFile) {
-      setError('Titre et vidéo requis')
+
+    if (!formData.title) {
+      setError('Titre requis')
+      return
+    }
+
+    if (videoType === 'upload' && !videoFile) {
+      setError('Veuillez uploader une vidéo')
+      return
+    }
+
+    if (videoType === 'youtube' && !formData.youtube_url) {
+      setError('Veuillez entrer un lien YouTube')
       return
     }
 
     setUploading(true)
     try {
-      const videoUrl = await uploadVideo(videoFile)
-      if (!videoUrl) return
+      let videoUrl: string | null = null
+      let youtubeUrl: string | null = null
+
+      if (videoType === 'upload' && videoFile) {
+        videoUrl = await uploadVideo(videoFile)
+        if (!videoUrl) return
+      } else if (videoType === 'youtube') {
+        youtubeUrl = formData.youtube_url
+      }
 
       let thumbnailUrl: string | null = formData.thumbnail_url
       if (thumbnailFile) {
@@ -153,30 +195,39 @@ export default function ShortVideosManager() {
         thumbnailUrl = uploadedThumbnail
       }
 
+      const insertData: any = {
+        title: formData.title,
+        description: formData.description,
+        thumbnail_url: thumbnailUrl,
+        duration_seconds: formData.duration_seconds,
+        creator: formData.creator,
+      }
+
+      if (videoUrl) {
+        insertData.video_url = videoUrl
+      }
+      if (youtubeUrl) {
+        insertData.youtube_url = youtubeUrl
+      }
+
       const { error } = await supabase
         .from('short_videos')
-        .insert([
-          {
-            title: formData.title,
-            description: formData.description,
-            video_url: videoUrl,
-            thumbnail_url: thumbnailUrl,
-            duration_seconds: formData.duration_seconds,
-            creator: formData.creator,
-          },
-        ])
+        .insert([insertData])
 
       if (error) throw error
+
       setFormData({
         title: '',
         description: '',
         video_url: '',
+        youtube_url: '',
         thumbnail_url: '',
         duration_seconds: 30,
         creator: '',
       })
       setVideoFile(null)
       setThumbnailFile(null)
+      setVideoType('upload')
       fetchVideos()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur')
@@ -192,11 +243,13 @@ export default function ShortVideosManager() {
     setUploading(true)
     try {
       let videoUrl: string | null = formData.video_url
+      let youtubeUrl: string | null = formData.youtube_url
       let thumbnailUrl: string | null = formData.thumbnail_url
 
       if (videoFile) {
         videoUrl = await uploadVideo(videoFile)
         if (!videoUrl) return
+        youtubeUrl = null
       }
 
       if (thumbnailFile) {
@@ -204,16 +257,26 @@ export default function ShortVideosManager() {
         if (!thumbnailUrl) return
       }
 
+      const updateData: any = {
+        title: formData.title,
+        description: formData.description,
+        thumbnail_url: thumbnailUrl,
+        duration_seconds: formData.duration_seconds,
+        creator: formData.creator,
+      }
+
+      if (videoUrl) {
+        updateData.video_url = videoUrl
+        updateData.youtube_url = null
+      }
+      if (youtubeUrl) {
+        updateData.youtube_url = youtubeUrl
+        updateData.video_url = null
+      }
+
       const { error } = await supabase
         .from('short_videos')
-        .update({
-          title: formData.title,
-          description: formData.description,
-          video_url: videoUrl,
-          thumbnail_url: thumbnailUrl,
-          duration_seconds: formData.duration_seconds,
-          creator: formData.creator,
-        })
+        .update(updateData)
         .eq('id', editingId)
 
       if (error) throw error
@@ -222,12 +285,14 @@ export default function ShortVideosManager() {
         title: '',
         description: '',
         video_url: '',
+        youtube_url: '',
         thumbnail_url: '',
         duration_seconds: 30,
         creator: '',
       })
       setVideoFile(null)
       setThumbnailFile(null)
+      setVideoType('upload')
       fetchVideos()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur')
@@ -254,14 +319,19 @@ export default function ShortVideosManager() {
 
   const startEdit = (video: ShortVideo) => {
     setEditingId(video.id)
+    const isYoutube = !!video.youtube_url
+    setVideoType(isYoutube ? 'youtube' : 'upload')
     setFormData({
       title: video.title,
       description: video.description,
-      video_url: video.video_url,
-      thumbnail_url: video.thumbnail_url,
+      video_url: video.video_url || '',
+      youtube_url: video.youtube_url || '',
+      thumbnail_url: video.thumbnail_url || '',
       duration_seconds: video.duration_seconds,
       creator: video.creator,
     })
+    setVideoFile(null)
+    setThumbnailFile(null)
   }
 
   if (loading) return <div>Chargement...</div>
@@ -305,55 +375,92 @@ export default function ShortVideosManager() {
           placeholder="Créateur"
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="border-2 border-dashed border-gray-500 rounded-lg p-4">
-            <label className="cursor-pointer block text-center">
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleVideoFileChange}
-                className="hidden"
-              />
-              <div className="text-gray-400 text-sm">
-                {videoFile ? (
-                  <>
-                    <div className="text-green-400 font-semibold">✅ Vidéo OK</div>
-                    <div className="text-xs">{videoDuration}s sélectionnées</div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-purple font-semibold">🎬 Vidéo</div>
-                    <div className="text-xs">30-40s max</div>
-                  </>
-                )}
-              </div>
-            </label>
-          </div>
-
-          <div className="border-2 border-dashed border-gray-500 rounded-lg p-4">
-            <label className="cursor-pointer block text-center">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleThumbnailFileChange}
-                className="hidden"
-              />
-              <div className="text-gray-400 text-sm">
-                {thumbnailFile ? (
-                  <>
-                    <div className="text-green-400 font-semibold">✅ Couverture</div>
-                    <div className="text-xs">Prête</div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-purple font-semibold">🖼️ Couverture</div>
-                    <div className="text-xs">Optionnel</div>
-                  </>
-                )}
-              </div>
-            </label>
-          </div>
+        <div className="flex gap-4 mb-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              value="upload"
+              checked={videoType === 'upload'}
+              onChange={(e) => setVideoType(e.target.value as 'upload' | 'youtube')}
+              className="w-4 h-4"
+            />
+            <span className="text-white">📤 Télécharger vidéo</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              value="youtube"
+              checked={videoType === 'youtube'}
+              onChange={(e) => setVideoType(e.target.value as 'upload' | 'youtube')}
+              className="w-4 h-4"
+            />
+            <span className="text-white">🎥 Lien YouTube</span>
+          </label>
         </div>
+
+        {videoType === 'upload' ? (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="border-2 border-dashed border-gray-500 rounded-lg p-4">
+              <label className="cursor-pointer block text-center">
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoFileChange}
+                  className="hidden"
+                />
+                <div className="text-gray-400 text-sm">
+                  {videoFile ? (
+                    <>
+                      <div className="text-green-400 font-semibold">✅ Vidéo OK</div>
+                      <div className="text-xs">{videoDuration}s sélectionnées</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-purple font-semibold">🎬 Vidéo</div>
+                      <div className="text-xs">30-40s max</div>
+                    </>
+                  )}
+                </div>
+              </label>
+            </div>
+
+            <div className="border-2 border-dashed border-gray-500 rounded-lg p-4">
+              <label className="cursor-pointer block text-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailFileChange}
+                  className="hidden"
+                />
+                <div className="text-gray-400 text-sm">
+                  {thumbnailFile ? (
+                    <>
+                      <div className="text-green-400 font-semibold">✅ Couverture</div>
+                      <div className="text-xs">Prête</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-purple font-semibold">🖼️ Couverture</div>
+                      <div className="text-xs">Optionnel</div>
+                    </>
+                  )}
+                </div>
+              </label>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <input
+              type="url"
+              value={formData.youtube_url}
+              onChange={(e) => handleYoutubeUrlChange(e.target.value)}
+              className="w-full bg-gray-600 text-white border border-gray-500 rounded-lg p-3 focus:outline-none focus:border-purple"
+              placeholder="https://www.youtube.com/watch?v=... ou https://youtu.be/..."
+              required
+            />
+            <p className="text-xs text-gray-400 mt-2">La miniature sera extraite automatiquement de YouTube</p>
+          </div>
+        )}
 
         <div className="flex gap-4">
           <button
@@ -372,12 +479,14 @@ export default function ShortVideosManager() {
                   title: '',
                   description: '',
                   video_url: '',
+                  youtube_url: '',
                   thumbnail_url: '',
                   duration_seconds: 30,
                   creator: '',
                 })
                 setVideoFile(null)
                 setThumbnailFile(null)
+                setVideoType('upload')
               }}
               className="flex-1 bg-gray-600 hover:bg-gray-500 px-6 py-2 rounded-lg font-semibold transition"
             >
@@ -410,9 +519,15 @@ export default function ShortVideosManager() {
               <p className="text-xs text-purple">
                 👤 {video.creator} | ⏱️ {video.duration_seconds}s
               </p>
-              <video controls className="w-full mt-2 h-20 rounded bg-black">
-                <source src={video.video_url} type="video/mp4" />
-              </video>
+              {video.video_url ? (
+                <video controls className="w-full mt-2 h-20 rounded bg-black">
+                  <source src={video.video_url} type="video/mp4" />
+                </video>
+              ) : (
+                <div className="mt-2 text-xs text-gray-400 bg-gray-600 p-2 rounded">
+                  🎥 Vidéo YouTube
+                </div>
+              )}
             </div>
             <div className="flex gap-2 flex-shrink-0">
               <button

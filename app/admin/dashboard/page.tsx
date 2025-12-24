@@ -20,6 +20,7 @@ import FeaturesManager from '@/components/admin/FeaturesManager'
 import ServicesManager from '@/components/admin/ServicesManager'
 import TestimonialsManager from '@/components/admin/TestimonialsManager'
 import CommunityMembersManager from '@/components/admin/CommunityMembersManager'
+import MissionVisionManager from '@/components/admin/MissionVisionManager'
 import SettingsManager from '@/components/admin/SettingsManager'
 import HeroManager from '@/components/admin/HeroManager'
 import FooterSocialManager from '@/components/admin/FooterSocialManager'
@@ -82,6 +83,7 @@ export default function AdminDashboard() {
       icon: FileEdit,
       gradient: 'from-indigo-500 to-purple-600',
       items: [
+        { id: 'mission-vision', label: 'Notre Mission & Statistiques', icon: FileEdit, description: 'Titre, contenu et statistiques de la mission' },
         { id: 'features', label: 'Features (À Propos)', icon: Star, description: 'Les 3 features de la section À Propos' },
         { id: 'content-sections', label: 'Sections de Contenu', icon: FileEdit, description: 'Contenu texte des sections' },
       ]
@@ -340,6 +342,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 lg:p-8">
               {activeTab === 'hero-content' && <HeroManager />}
               {activeTab === 'headings' && <HeadingsManager />}
+              {activeTab === 'mission-vision' && <MissionVisionManager />}
               {activeTab === 'features' && <FeaturesManager />}
               {activeTab === 'services' && <ServicesManager />}
               {activeTab === 'community-members' && <CommunityMembersManager />}

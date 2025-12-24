@@ -1,30 +1,63 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight, Sparkles, Calendar, Users } from 'lucide-react'
 import Image from 'next/image'
+import { supabase } from '@/lib/supabase'
+
+interface GalleryItem {
+  id: string
+  title: string
+  imageUrl: string
+  category: string
+  date: string
+  attendees: number
+}
 
 export default function Gallery() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null)
   const [activeFilter, setActiveFilter] = useState('Tous')
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const galleryItems = [
-    { id: 1, title: 'Moment Spirituel', imageUrl: '/images/img1.jpg', category: 'Culte', date: 'Décembre 2024', attendees: 250 },
-    { id: 2, title: 'Communion', imageUrl: '/images/img2.jpg', category: 'Célébration', date: 'Novembre 2024', attendees: 180 },
-    { id: 3, title: 'Célébration', imageUrl: '/images/img3.jpg', category: 'Événement', date: 'Octobre 2024', attendees: 320 },
-    { id: 4, title: 'Prière', imageUrl: '/images/img1.jpg', category: 'Culte', date: 'Septembre 2024', attendees: 200 },
-    { id: 5, title: 'Enseignement', imageUrl: '/images/img2.jpg', category: 'Formation', date: 'Août 2024', attendees: 150 },
-    { id: 6, title: 'Communauté', imageUrl: '/images/img3.jpg', category: 'Rencontre', date: 'Juillet 2024', attendees: 280 },
-    { id: 7, title: 'Partage', imageUrl: '/images/img1.jpg', category: 'Événement', date: 'Juin 2024', attendees: 190 },
-    { id: 8, title: 'Foi', imageUrl: '/images/img2.jpg', category: 'Culte', date: 'Mai 2024', attendees: 220 },
+  useEffect(() => {
+    fetchGalleryItems()
+  }, [])
+
+  const fetchGalleryItems = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('gallery_items')
+        .select('*')
+        .order('order_index', { ascending: true })
+
+      if (error) throw error
+      setGalleryItems(data || [])
+    } catch (err) {
+      console.error('Erreur fetch gallery:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const defaultGalleryItems = [
+    { id: '1', title: 'Moment Spirituel', imageUrl: '/images/img1.jpg', category: 'Culte', date: 'Décembre 2024', attendees: 250 },
+    { id: '2', title: 'Communion', imageUrl: '/images/img2.jpg', category: 'Célébration', date: 'Novembre 2024', attendees: 180 },
+    { id: '3', title: 'Célébration', imageUrl: '/images/img3.jpg', category: 'Événement', date: 'Octobre 2024', attendees: 320 },
+    { id: '4', title: 'Prière', imageUrl: '/images/img1.jpg', category: 'Culte', date: 'Septembre 2024', attendees: 200 },
+    { id: '5', title: 'Enseignement', imageUrl: '/images/img2.jpg', category: 'Formation', date: 'Août 2024', attendees: 150 },
+    { id: '6', title: 'Communauté', imageUrl: '/images/img3.jpg', category: 'Rencontre', date: 'Juillet 2024', attendees: 280 },
+    { id: '7', title: 'Partage', imageUrl: '/images/img1.jpg', category: 'Événement', date: 'Juin 2024', attendees: 190 },
+    { id: '8', title: 'Foi', imageUrl: '/images/img2.jpg', category: 'Culte', date: 'Mai 2024', attendees: 220 },
   ]
 
+  const displayItems = galleryItems.length > 0 ? galleryItems : defaultGalleryItems
   const categories = ['Tous', 'Culte', 'Célébration', 'Événement', 'Formation', 'Rencontre']
 
   const filteredItems = activeFilter === 'Tous' 
-    ? galleryItems 
-    : galleryItems.filter(item => item.category === activeFilter)
+    ? displayItems
+    : displayItems.filter(item => item.category === activeFilter)
 
   // Bento Grid Layout Pattern
   const getBentoClass = (index: number) => {

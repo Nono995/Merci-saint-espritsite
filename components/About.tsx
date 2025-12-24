@@ -19,6 +19,18 @@ interface PageHeading {
   description: string
 }
 
+interface MissionVisionContent {
+  id: string
+  title: string
+  description1: string
+  description2: string
+  image_url: string
+  stats_label1: string
+  stats_value1: string
+  stats_label2: string
+  stats_value2: string
+}
+
 const iconMap: Record<string, any> = {
   Heart,
   Users,
@@ -28,6 +40,7 @@ const iconMap: Record<string, any> = {
 export default function About() {
   const [features, setFeatures] = useState<Feature[]>([])
   const [aboutHeading, setAboutHeading] = useState<PageHeading | null>(null)
+  const [missionContent, setMissionContent] = useState<MissionVisionContent | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -47,11 +60,19 @@ export default function About() {
         .eq('page_name', 'about')
         .single()
 
+      const { data: missionData, error: missionError } = await supabase
+        .from('mission_vision_content')
+        .select('*')
+        .eq('section_name', 'mission')
+        .single()
+
       if (featuresError) throw featuresError
       if (headingError && headingError.code !== 'PGRST116') throw headingError
+      if (missionError && missionError.code !== 'PGRST116') console.warn('Mission content non trouvé')
 
       setFeatures(featuresData || [])
       setAboutHeading(headingData || null)
+      setMissionContent(missionData || null)
     } catch (err) {
       console.error('Erreur fetch about:', err)
     } finally {
@@ -144,22 +165,22 @@ export default function About() {
               </span>
             </div>
             <h3 className="font-display text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-              Notre Mission
+              {missionContent?.title || 'Notre Mission'}
             </h3>
             <p className="text-gray-600 leading-relaxed text-lg">
-              Nous croyons en une foi active, authentique et transformatrice. Notre mission est de créer un espace où les gens peuvent grandir spirituellement, trouver du soutien communautaire et vivre l'impact du Christ dans leur vie quotidienne.
+              {missionContent?.description1 || 'Nous croyons en une foi active, authentique et transformatrice. Notre mission est de créer un espace où les gens peuvent grandir spirituellement, trouver du soutien communautaire et vivre l\'impact du Christ dans leur vie quotidienne.'}
             </p>
             <p className="text-gray-600 leading-relaxed text-lg">
-              Avec des services modernes, une communauté chaleureuse et un engagement envers les services d'intérêt général, nous sommes là pour vous accompagner dans votre parcours spirituel.
+              {missionContent?.description2 || 'Avec des services modernes, une communauté chaleureuse et un engagement envers les services d\'intérêt général, nous sommes là pour vous accompagner dans votre parcours spirituel.'}
             </p>
             <div className="flex gap-4 pt-4">
               <div className="flex-1 bg-gradient-to-br from-secondary/10 to-rose-500/10 p-4 rounded-xl border border-secondary/20">
-                <p className="text-3xl font-bold text-gray-900">500+</p>
-                <p className="text-sm text-gray-600">Membres actifs</p>
+                <p className="text-3xl font-bold text-gray-900">{missionContent?.stats_value1 || '500+'}</p>
+                <p className="text-sm text-gray-600">{missionContent?.stats_label1 || 'Membres actifs'}</p>
               </div>
               <div className="flex-1 bg-gradient-to-br from-accent/10 to-purple/10 p-4 rounded-xl border border-accent/20">
-                <p className="text-3xl font-bold text-gray-900">15+</p>
-                <p className="text-sm text-gray-600">Années d'expérience</p>
+                <p className="text-3xl font-bold text-gray-900">{missionContent?.stats_value2 || '15+'}</p>
+                <p className="text-sm text-gray-600">{missionContent?.stats_label2 || 'Années d\'expérience'}</p>
               </div>
             </div>
           </motion.div>

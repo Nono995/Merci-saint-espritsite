@@ -3,9 +3,43 @@
 import { motion } from 'framer-motion'
 import { Calendar, MapPin, Users } from 'lucide-react'
 import Image from 'next/image'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+
+interface Event {
+  id: string
+  date: string
+  title: string
+  description: string
+  attendees: string
+  imageUrl: string
+}
 
 export default function Events() {
-  const events = [
+  const [events, setEvents] = useState<Event[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchEvents()
+  }, [])
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('order_index', { ascending: true })
+
+      if (error) throw error
+      setEvents(data || [])
+    } catch (err) {
+      console.error('Erreur fetch events:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const defaultEvents = [
     {
       date: '15 Décembre',
       title: 'Célébration de Noël',
@@ -35,6 +69,8 @@ export default function Events() {
       imageUrl: '/images/img1.jpg',
     },
   ]
+
+  const displayEvents = events.length > 0 ? events : defaultEvents
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -92,7 +128,7 @@ export default function Events() {
           viewport={{ once: true }}
           className="grid md:grid-cols-2 gap-8"
         >
-          {events.map((event, index) => (
+          {displayEvents.map((event, index) => (
             <motion.div
               key={index}
               variants={itemVariants}
