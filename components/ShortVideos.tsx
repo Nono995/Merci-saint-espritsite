@@ -50,7 +50,7 @@ export default function ShortVideos() {
     }
   }
 
-  const defaultVideos = [
+  const defaultVideos: ShortVideo[] = [
     {
       id: '1',
       title: 'Mot d\'Encouragement du Jour',
