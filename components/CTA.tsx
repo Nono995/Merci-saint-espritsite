@@ -14,24 +14,41 @@ interface ContactInfo {
   email_response_time: string
 }
 
+interface PageHeading {
+  id: string
+  title: string
+  description: string
+}
+
 export default function CTA() {
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null)
+  const [ctaHeading, setCtaHeading] = useState<PageHeading | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchContactInfo()
+    fetchData()
   }, [])
 
-  const fetchContactInfo = async () => {
+  const fetchData = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: contactData, error: contactError } = await supabase
         .from('contact_info')
         .select('*')
-        .single()
+        .maybeSingle()
 
-      if (error) throw error
-      setContactInfo(data)
+      const { data: headingData, error: headingError } = await supabase
+        .from('page_headings')
+        .select('*')
+        .eq('page_name', 'cta')
+        .maybeSingle()
+
+      if (contactError) throw contactError
+      if (headingError && headingError.code !== 'PGRST116') throw headingError
+
+      setContactInfo(contactData)
+      setCtaHeading(headingData || null)
     } catch (err) {
-      console.error('Erreur fetch contact:', err)
+      console.error('Erreur fetch cta:', err)
       // Valeurs par défaut si erreur
       setContactInfo({
         address: '123 Rue de la Foi',
@@ -41,6 +58,8 @@ export default function CTA() {
         email: 'contact@graceAndFaith.fr',
         email_response_time: 'Réponse en 24h'
       })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -78,25 +97,11 @@ export default function CTA() {
           </motion.div>
           
           <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-black text-light mb-8 leading-[1.1]">
-            Prêt à Rejoindre{' '}
-            <span className="relative inline-block">
-              <span className="bg-gradient-to-r from-secondary via-purple to-secondary bg-clip-text text-transparent animate-gradient">
-                Notre Communauté
-              </span>
-              <svg className="absolute -bottom-2 left-0 w-full" height="12" viewBox="0 0 300 12" fill="none">
-                <path d="M2 10C50 5 100 2 150 5C200 8 250 3 298 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-secondary" />
-              </svg>
-            </span>
-            <span className="text-secondary">?</span>
+            {ctaHeading?.title || 'Prêt à Rejoindre Notre Communauté ?'}
           </h2>
           
           <p className="text-lg md:text-xl text-light/95 leading-relaxed max-w-2xl mx-auto">
-            Que vous soyez à la recherche d'une{' '}
-            <span className="relative inline-block">
-              <span className="relative z-10 font-semibold text-white">communauté spirituelle</span>
-              <span className="absolute bottom-0 left-0 w-full h-2 bg-secondary/20 blur-sm" />
-            </span>
-            , d'un soutien ou simplement curieux, nous vous accueillons à bras ouverts.
+            {ctaHeading?.description || 'Que vous soyez à la recherche d\'une communauté spirituelle, d\'un soutien ou simplement curieux, nous vous accueillons à bras ouverts.'}
           </p>
         </motion.div>
 

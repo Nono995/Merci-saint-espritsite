@@ -17,6 +17,7 @@ interface PageHeading {
   id: string
   title: string
   description: string
+  tag?: string
 }
 
 interface MissionVisionContent {
@@ -58,13 +59,13 @@ export default function About() {
         .from('page_headings')
         .select('*')
         .eq('page_name', 'about')
-        .single()
+        .maybeSingle()
 
       const { data: missionData, error: missionError } = await supabase
         .from('mission_vision_content')
         .select('*')
         .eq('section_name', 'mission')
-        .single()
+        .maybeSingle()
 
       if (featuresError) throw featuresError
       if (headingError && headingError.code !== 'PGRST116') throw headingError
@@ -119,7 +120,7 @@ export default function About() {
             <div className="inline-flex items-center gap-2 bg-secondary/10 px-5 py-2 rounded-full">
               <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
               <span className="text-secondary font-semibold text-sm tracking-[0.2em] uppercase">
-                Découvrez-nous
+                {aboutHeading?.tag || 'Découvrez-nous'}
               </span>
             </div>
           </motion.div>
@@ -142,7 +143,7 @@ export default function About() {
             <div className="absolute -inset-4 bg-gradient-to-br from-secondary/20 to-rose-500/20 rounded-3xl blur-2xl"></div>
             <div className="relative h-[500px] rounded-2xl overflow-hidden shadow-strong">
               <Image
-                src="/images/img1.jpg"
+                src={missionContent?.image_url || "/images/img1.jpg"}
                 alt="Église - Merci Saint-Esprit"
                 fill
                 className="object-cover"
@@ -168,10 +169,10 @@ export default function About() {
               {missionContent?.title || 'Notre Mission'}
             </h3>
             <p className="text-gray-600 leading-relaxed text-lg">
-              {missionContent?.description1 || 'Nous croyons en une foi active, authentique et transformatrice. Notre mission est de créer un espace où les gens peuvent grandir spirituellement, trouver du soutien communautaire et vivre l\'impact du Christ dans leur vie quotidienne.'}
+              {missionContent?.description1 || 'Fondée en 2019 par le Pasteur Anderson Kamdem, notre vision est de bâtir des vies et transformer des nations par la puissance du Saint-Esprit. Nous formons des disciples enracinés dans la Parole pour impacter chaque sphère de la société.'}
             </p>
             <p className="text-gray-600 leading-relaxed text-lg">
-              {missionContent?.description2 || 'Avec des services modernes, une communauté chaleureuse et un engagement envers les services d\'intérêt général, nous sommes là pour vous accompagner dans votre parcours spirituel.'}
+              {missionContent?.description2 || 'Animés par l\'excellence et la consécration, nous avançons avec foi pour un impact durable sur notre génération.'}
             </p>
             <div className="flex gap-4 pt-4">
               <div className="flex-1 bg-gradient-to-br from-secondary/10 to-rose-500/10 p-4 rounded-xl border border-secondary/20">

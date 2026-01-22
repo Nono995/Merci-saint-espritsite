@@ -38,7 +38,7 @@ export default function FooterSocialManager() {
       const { data, error } = await supabase
         .from('social_links')
         .select('*')
-        .single()
+        .maybeSingle()
 
       if (error && error.code !== 'PGRST116') throw error
       

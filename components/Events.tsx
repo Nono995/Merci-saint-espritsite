@@ -12,28 +12,45 @@ interface Event {
   title: string
   description: string
   attendees: string
-  imageUrl: string
+  image_url: string
+}
+
+interface PageHeading {
+  id: string
+  title: string
+  description: string
+  tag?: string
 }
 
 export default function Events() {
   const [events, setEvents] = useState<Event[]>([])
+  const [eventsHeading, setEventsHeading] = useState<PageHeading | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchEvents()
+    fetchData()
   }, [])
 
-  const fetchEvents = async () => {
+  const fetchData = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: eventsData, error: eventsError } = await supabase
         .from('events')
         .select('*')
-        .order('order_index', { ascending: true })
+        .order('date', { ascending: true })
 
-      if (error) throw error
-      setEvents(data || [])
+      const { data: headingData, error: headingError } = await supabase
+        .from('page_headings')
+        .select('*')
+        .eq('page_name', 'events')
+        .maybeSingle()
+
+      if (eventsError) throw eventsError
+      if (headingError && headingError.code !== 'PGRST116') throw headingError
+
+      setEvents(eventsData || [])
+      setEventsHeading(headingData || null)
     } catch (err) {
-      console.error('Erreur fetch events:', err)
+      console.error('Erreur fetch events:', err instanceof Error ? err.message : JSON.stringify(err))
     } finally {
       setLoading(false)
     }
@@ -45,28 +62,28 @@ export default function Events() {
       title: 'Célébration de Noël',
       description: 'Une célébration spéciale de la naissance du Christ avec musique et festif',
       attendees: '500+',
-      imageUrl: '/images/img1.jpg',
+      image_url: '/images/img1.jpg',
     },
     {
       date: '22 Décembre',
       title: 'Concert de Chants Sacrés',
       description: 'Soirée musicale inspirante avec l\'orchestre de notre église',
       attendees: '300+',
-      imageUrl: '/images/img2.jpg',
+      image_url: '/images/img2.jpg',
     },
     {
       date: '5 Janvier',
       title: 'Retraite Spirituelle',
       description: 'Weekend de méditation et de croissance spirituelle en montagne',
       attendees: '150+',
-      imageUrl: '/images/img3.jpg',
+      image_url: '/images/img3.jpg',
     },
     {
       date: '20 Janvier',
       title: 'Conférence Jeunesse',
       description: 'Rencontre des jeunes avec des orateurs inspirants',
       attendees: '200+',
-      imageUrl: '/images/img1.jpg',
+      image_url: '/images/img1.jpg',
     },
   ]
 
@@ -109,15 +126,15 @@ export default function Events() {
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-5 py-2 rounded-full border border-white/20">
               <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
               <span className="text-secondary font-semibold text-sm tracking-[0.2em] uppercase">
-                Agenda
+                {eventsHeading?.tag || 'Agenda'}
               </span>
             </div>
           </motion.div>
           <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-light mb-6 leading-tight">
-            Événements à Venir
+            {eventsHeading?.title || 'Événements à Venir'}
           </h2>
           <p className="text-xl text-light/90 max-w-3xl mx-auto leading-relaxed">
-            Découvrez nos événements spéciaux et marquez votre calendrier
+            {eventsHeading?.description || 'Découvrez nos événements spéciaux et marquez votre calendrier'}
           </p>
         </motion.div>
 
@@ -138,7 +155,7 @@ export default function Events() {
               <div className="flex md:flex-row flex-col h-full">
                 <div className="relative w-full md:w-48 h-40 sm:h-48 md:h-auto overflow-hidden group-hover:brightness-75 transition-all duration-300">
                   <Image
-                    src={event.imageUrl}
+                    src={event.image_url}
                     alt={event.title}
                     fill
                     className="object-cover"

@@ -1,52 +1,82 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { Play, Pause, Volume2, User } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Play, Pause, Volume2, User, RotateCcw, RotateCw, FastForward, Download, VolumeX } from 'lucide-react'
 import Image from 'next/image'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+
+interface Podcast {
+  id: string
+  title: string
+  description: string
+  audio_url: string
+  episode: string
+  speaker: string
+  image_url: string
+  duration_seconds: number
+  date: string
+}
+
+interface PageHeading {
+  id: string
+  title: string
+  description: string
+  tag?: string
+}
 
 export default function Podcasts() {
-  const [playingId, setPlayingId] = useState<number | null>(null)
-  const [currentTime, setCurrentTime] = useState<Record<number, number>>({})
-  const audioRefs = useRef<Record<number, HTMLAudioElement | null>>({})
+  const [podcasts, setPodcasts] = useState<Podcast[]>([])
+  const [podcastsHeading, setPodcastsHeading] = useState<PageHeading | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [playingId, setPlayingId] = useState<string | null>(null)
+  const [currentTime, setCurrentTime] = useState<Record<string, number>>({})
+  const [volume, setVolume] = useState<Record<string, number>>({})
+  const [playbackRate, setPlaybackRate] = useState<Record<string, number>>({})
+  const [showVolume, setShowVolume] = useState<string | null>(null)
+  const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({})
 
-  const podcasts = [
-    {
-      id: 1,
-      title: 'La Foi en Action',
-      episode: 'Épisode 12',
-      duration: '32:45',
-      speaker: 'Pasteur Jean',
-      description: 'Découvrez comment vivre sa foi au quotidien avec des exemples concrets et des enseignements pratiques.',
-      imageUrl: '/images/img1.jpg',
-      date: '15 Déc 2024',
-      audioUrl: '/audio/sample.mp3',
-    },
-    {
-      id: 2,
-      title: 'Paroles de Vie',
-      episode: 'Épisode 8',
-      duration: '28:12',
-      speaker: 'Marie Dupont',
-      description: 'Méditations inspirantes pour votre journée, basées sur les Écritures et la prière.',
-      imageUrl: '/images/img2.jpg',
-      date: '10 Déc 2024',
-      audioUrl: '/audio/sample.mp3',
-    },
-    {
-      id: 3,
-      title: 'Questions de Jeunesse',
-      episode: 'Épisode 15',
-      duration: '35:30',
-      speaker: 'Sophie Bernard',
-      description: 'Réponses aux questions spirituelles des jeunes dans un format accessible et moderne.',
-      imageUrl: '/images/img3.jpg',
-      date: '5 Déc 2024',
-      audioUrl: '/audio/sample.mp3',
-    },
-  ]
+  useEffect(() => {
+    fetchData()
+  }, [])
 
-  const togglePlay = (id: number) => {
+  const fetchData = async () => {
+    try {
+      const { data: podcastsData, error: podcastsError } = await supabase
+        .from('podcasts')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      const { data: headingData, error: headingError } = await supabase
+        .from('page_headings')
+        .select('*')
+        .eq('page_name', 'podcasts')
+        .maybeSingle()
+
+      if (podcastsError) throw podcastsError
+      if (headingError && headingError.code !== 'PGRST116') throw headingError
+
+      setPodcasts(podcastsData || [])
+      setPodcastsHeading(headingData || null)
+      
+      // Initialize states for each podcast
+      const initialVolume: Record<string, number> = {}
+      const initialRate: Record<string, number> = {}
+      const data = podcastsData || []
+      data.forEach(p => {
+        initialVolume[p.id] = 1
+        initialRate[p.id] = 1
+      })
+      setVolume(initialVolume)
+      setPlaybackRate(initialRate)
+    } catch (err) {
+      console.error('Erreur fetch podcasts:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const togglePlay = (id: string) => {
     const audio = audioRefs.current[id]
     if (!audio) return
 
@@ -54,20 +84,23 @@ export default function Podcasts() {
       audio.pause()
       setPlayingId(null)
     } else {
-      Object.values(audioRefs.current).forEach(a => a?.pause())
+      // Pause all other audios
+      Object.entries(audioRefs.current).forEach(([pid, a]) => {
+        if (pid !== id && a) a.pause()
+      })
       audio.play()
       setPlayingId(id)
     }
   }
 
-  const handleTimeUpdate = (id: number) => {
+  const handleTimeUpdate = (id: string) => {
     const audio = audioRefs.current[id]
     if (audio) {
       setCurrentTime(prev => ({ ...prev, [id]: audio.currentTime }))
     }
   }
 
-  const handleSeek = (id: number, value: number) => {
+  const handleSeek = (id: string, value: number) => {
     const audio = audioRefs.current[id]
     if (audio) {
       audio.currentTime = value
@@ -75,15 +108,37 @@ export default function Podcasts() {
     }
   }
 
+  const skip = (id: string, amount: number) => {
+    const audio = audioRefs.current[id]
+    if (audio) {
+      audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + amount))
+    }
+  }
+
+  const handleVolumeChange = (id: string, value: number) => {
+    const audio = audioRefs.current[id]
+    if (audio) {
+      audio.volume = value
+      setVolume(prev => ({ ...prev, [id]: value }))
+    }
+  }
+
+  const handleRateChange = (id: string) => {
+    const audio = audioRefs.current[id]
+    if (audio) {
+      const rates = [1, 1.25, 1.5, 2]
+      const currentRate = playbackRate[id] || 1
+      const nextRate = rates[(rates.indexOf(currentRate) + 1) % rates.length]
+      audio.playbackRate = nextRate
+      setPlaybackRate(prev => ({ ...prev, [id]: nextRate }))
+    }
+  }
+
   const formatTime = (seconds: number) => {
+    if (!seconds) return '0:00'
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const parseDuration = (duration: string) => {
-    const [mins, secs] = duration.split(':').map(Number)
-    return mins * 60 + secs
   }
 
   const containerVariants = {
@@ -98,6 +153,35 @@ export default function Podcasts() {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
   }
+
+  if (loading) return null
+
+  const defaultPodcasts: Podcast[] = [
+    {
+      id: 'default-1',
+      title: 'La Puissance de la Foi',
+      description: 'Un message inspirant sur la manière dont la foi peut déplacer des montagnes dans votre vie quotidienne.',
+      audio_url: '#',
+      episode: 'Épisode 01',
+      speaker: 'Pasteur Anderson Kamdem',
+      image_url: '/images/img1.jpg',
+      duration_seconds: 1800,
+      date: '20 Janvier 2025'
+    },
+    {
+      id: 'default-2',
+      title: 'Marcher avec le Saint-Esprit',
+      description: 'Découvrez comment cultiver une relation intime et quotidienne avec le Saint-Esprit.',
+      audio_url: '#',
+      episode: 'Épisode 02',
+      speaker: 'Pasteur Anderson Kamdem',
+      image_url: '/images/img2.jpg',
+      duration_seconds: 2100,
+      date: '15 Janvier 2025'
+    }
+  ]
+
+  const displayPodcasts = podcasts.length > 0 ? podcasts : defaultPodcasts
 
   return (
     <section id="podcasts" className="py-24 bg-white relative overflow-hidden section-pattern">
@@ -119,15 +203,15 @@ export default function Podcasts() {
             <div className="inline-flex items-center gap-2 bg-secondary/10 px-5 py-2 rounded-full">
               <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
               <span className="text-secondary font-semibold text-sm tracking-[0.2em] uppercase">
-                Écoutez & Inspirez-vous
+                {podcastsHeading?.tag || 'Écoutez & Inspirez-vous'}
               </span>
             </div>
           </motion.div>
           <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            Podcasts & Audio
+            {podcastsHeading?.title || 'Podcasts & Audio'}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Des messages inspirants à emporter partout avec vous
+            {podcastsHeading?.description || 'Des messages inspirants à emporter partout avec vous'}
           </p>
         </motion.div>
 
@@ -138,7 +222,7 @@ export default function Podcasts() {
           viewport={{ once: true }}
           className="space-y-6"
         >
-          {podcasts.map((podcast) => (
+          {displayPodcasts.map((podcast) => (
             <motion.div
               key={podcast.id}
               variants={itemVariants}
@@ -147,7 +231,7 @@ export default function Podcasts() {
               <div className="flex flex-col md:flex-row gap-6 p-6">
                 <div className="relative w-full md:w-48 h-48 flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-secondary/20 to-rose-500/20">
                   <Image
-                    src={podcast.imageUrl}
+                    src={podcast.image_url || '/images/img1.jpg'}
                     alt={podcast.title}
                     fill
                     className="object-cover opacity-80"
@@ -182,22 +266,32 @@ export default function Podcasts() {
                   </div>
 
                   <div className="absolute bottom-3 right-3 bg-gray-900/80 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold">
-                    {podcast.duration}
+                    {formatTime(podcast.duration_seconds)}
                   </div>
                 </div>
 
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-xs font-bold text-secondary uppercase tracking-wider bg-secondary/10 px-3 py-1 rounded-full">
-                        {podcast.episode}
-                      </span>
-                      <span className="text-xs text-gray-500">{podcast.date}</span>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-secondary uppercase tracking-wider bg-secondary/10 px-3 py-1 rounded-full">
+                          {podcast.episode}
+                        </span>
+                        <span className="text-xs text-gray-500">{podcast.date}</span>
+                      </div>
+                      <a 
+                        href={podcast.audio_url} 
+                        download 
+                        className="p-2 text-gray-400 hover:text-secondary transition-colors"
+                        title="Télécharger"
+                      >
+                        <Download size={18} />
+                      </a>
                     </div>
                     <h3 className="font-display text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">
                       {podcast.title}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed mb-4 text-sm md:text-base">
+                    <p className="text-gray-600 leading-relaxed mb-4 text-sm md:text-base line-clamp-2">
                       {podcast.description}
                     </p>
                     <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
@@ -207,44 +301,100 @@ export default function Podcasts() {
                   </div>
 
                   {/* Audio Player */}
-                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                  <div className="bg-gray-50 rounded-2xl p-4 md:p-6 space-y-4">
                     <audio
                       ref={(el) => { audioRefs.current[podcast.id] = el }}
-                      src={podcast.audioUrl}
+                      src={podcast.audio_url}
                       onTimeUpdate={() => handleTimeUpdate(podcast.id)}
                       onEnded={() => setPlayingId(null)}
+                      preload="metadata"
                     />
                     
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => togglePlay(podcast.id)}
-                        className="w-10 h-10 bg-gradient-to-r from-secondary to-rose-500 rounded-full flex items-center justify-center text-white hover:shadow-strong transition-all duration-300 flex-shrink-0"
-                      >
-                        {playingId === podcast.id ? (
-                          <Pause size={18} fill="currentColor" />
-                        ) : (
-                          <Play size={18} className="ml-0.5" fill="currentColor" />
-                        )}
-                      </button>
+                    <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+                      <div className="flex items-center gap-4">
+                        <button 
+                          onClick={() => skip(podcast.id, -15)}
+                          className="p-2 text-gray-400 hover:text-secondary transition-colors"
+                        >
+                          <RotateCcw size={20} />
+                        </button>
+                        
+                        <button
+                          onClick={() => togglePlay(podcast.id)}
+                          className="w-12 h-12 bg-gradient-to-r from-secondary to-rose-500 rounded-full flex items-center justify-center text-white hover:shadow-strong transition-all duration-300 transform hover:scale-105"
+                        >
+                          {playingId === podcast.id ? (
+                            <Pause size={22} fill="currentColor" />
+                          ) : (
+                            <Play size={22} className="ml-1" fill="currentColor" />
+                          )}
+                        </button>
 
-                      <div className="flex-1">
+                        <button 
+                          onClick={() => skip(podcast.id, 15)}
+                          className="p-2 text-gray-400 hover:text-secondary transition-colors"
+                        >
+                          <RotateCw size={20} />
+                        </button>
+                      </div>
+
+                      <div className="flex-1 w-full space-y-1">
                         <input
                           type="range"
                           min="0"
-                          max={parseDuration(podcast.duration)}
+                          max={podcast.duration_seconds || 100}
                           value={currentTime[podcast.id] || 0}
                           onChange={(e) => handleSeek(podcast.id, Number(e.target.value))}
-                          className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-secondary [&::-webkit-slider-thumb]:to-rose-500 [&::-webkit-slider-thumb]:cursor-pointer"
+                          className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-secondary transition-all hover:h-2"
                         />
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <div className="flex justify-between text-[10px] md:text-xs font-medium text-gray-500">
                           <span>{formatTime(currentTime[podcast.id] || 0)}</span>
-                          <span>{podcast.duration}</span>
+                          <span>{formatTime(podcast.duration_seconds)}</span>
                         </div>
                       </div>
 
-                      <button className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-300 transition-colors flex-shrink-0">
-                        <Volume2 size={18} />
-                      </button>
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={() => handleRateChange(podcast.id)}
+                          className="text-xs font-bold text-gray-500 hover:text-secondary w-10 text-center bg-gray-200 py-1 rounded-md"
+                        >
+                          {playbackRate[podcast.id] || 1}x
+                        </button>
+
+                        <div 
+                          className="relative flex items-center"
+                          onMouseEnter={() => setShowVolume(podcast.id)}
+                          onMouseLeave={() => setShowVolume(null)}
+                        >
+                          <button 
+                            className="p-2 text-gray-500 hover:text-secondary transition-colors"
+                            onClick={() => handleVolumeChange(podcast.id, volume[podcast.id] === 0 ? 1 : 0)}
+                          >
+                            {(volume[podcast.id] || 1) === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                          </button>
+                          
+                          <AnimatePresence>
+                            {showVolume === podcast.id && (
+                              <motion.div
+                                initial={{ opacity: 0, width: 0 }}
+                                animate={{ opacity: 1, width: 80 }}
+                                exit={{ opacity: 0, width: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="1"
+                                  step="0.01"
+                                  value={volume[podcast.id] ?? 1}
+                                  onChange={(e) => handleVolumeChange(podcast.id, parseFloat(e.target.value))}
+                                  className="w-20 h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-secondary"
+                                />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

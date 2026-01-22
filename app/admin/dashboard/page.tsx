@@ -13,7 +13,7 @@ import BiblicalVersesManager from '@/components/admin/BiblicalVersesManager'
 import ContentSectionsManager from '@/components/admin/ContentSectionsManager'
 import ImagesManager from '@/components/admin/ImagesManager'
 import EventsManager from '@/components/admin/EventsManager'
-import PodcastsManagerV2 from '@/components/admin/PodcastsManagerV2'
+import PodcastsManager from '@/components/admin/PodcastsManager'
 import ShortVideosManager from '@/components/admin/ShortVideosManager'
 import HeadingsManager from '@/components/admin/HeadingsManager'
 import FeaturesManager from '@/components/admin/FeaturesManager'
@@ -353,7 +353,7 @@ export default function AdminDashboard() {
               {activeTab === 'images' && <ImagesManager />}
               {activeTab === 'gallery-items' && <GalleryManager />}
               {activeTab === 'events' && <EventsManager />}
-              {activeTab === 'podcasts' && <PodcastsManagerV2 />}
+              {activeTab === 'podcasts' && <PodcastsManager />}
               {activeTab === 'short-videos' && <ShortVideosManager />}
               {activeTab === 'contact-info' && <ContactInfoManager />}
               {activeTab === 'footer-social' && <FooterSocialManager />}

@@ -36,7 +36,7 @@ export default function ContactInfoManager() {
       const { data, error } = await supabase
         .from('contact_info')
         .select('*')
-        .single()
+        .maybeSingle()
 
       if (error && error.code !== 'PGRST116') throw error
       

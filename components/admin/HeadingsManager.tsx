@@ -8,6 +8,7 @@ interface Heading {
   page_name: string
   title: string
   description: string
+  tag?: string
 }
 
 const pages = [
@@ -31,6 +32,7 @@ export default function HeadingsManager() {
     page_name: '',
     title: '',
     description: '',
+    tag: '',
   })
   const [error, setError] = useState('')
 
@@ -64,7 +66,7 @@ export default function HeadingsManager() {
         .insert([formData])
 
       if (error) throw error
-      setFormData({ page_name: '', title: '', description: '' })
+      setFormData({ page_name: '', title: '', description: '', tag: '' })
       fetchHeadings()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur')
@@ -81,12 +83,13 @@ export default function HeadingsManager() {
         .update({
           title: formData.title,
           description: formData.description,
+          tag: formData.tag,
         })
         .eq('id', editingId)
 
       if (error) throw error
       setEditingId(null)
-      setFormData({ page_name: '', title: '', description: '' })
+      setFormData({ page_name: '', title: '', description: '', tag: '' })
       fetchHeadings()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur')
@@ -115,6 +118,7 @@ export default function HeadingsManager() {
       page_name: heading.page_name,
       title: heading.title,
       description: heading.description,
+      tag: heading.tag || '',
     })
   }
 
@@ -159,6 +163,14 @@ export default function HeadingsManager() {
           required
         />
 
+        <input
+          type="text"
+          value={formData.tag}
+          onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+          className="w-full bg-gray-600 text-white border border-gray-500 rounded-lg p-3 focus:outline-none focus:border-purple"
+          placeholder="Tag (ex: REJOIGNEZ-NOUS)"
+        />
+
         <textarea
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -197,9 +209,16 @@ export default function HeadingsManager() {
             className="bg-gray-700 p-4 rounded-lg flex justify-between items-start gap-4"
           >
             <div className="flex-1">
-              <p className="text-xs text-purple mb-1 uppercase font-semibold">
-                {heading.page_name}
-              </p>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-xs text-purple uppercase font-semibold">
+                  {heading.page_name}
+                </p>
+                {heading.tag && (
+                  <span className="text-[10px] bg-purple/20 text-purple px-2 py-0.5 rounded-full uppercase">
+                    {heading.tag}
+                  </span>
+                )}
+              </div>
               <h4 className="font-bold text-white mb-1">{heading.title}</h4>
               <p className="text-sm text-gray-300">{heading.description}</p>
             </div>

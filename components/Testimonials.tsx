@@ -15,24 +15,41 @@ interface Testimonial {
   image_url: string
 }
 
+interface PageHeading {
+  id: string
+  title: string
+  description: string
+  tag?: string
+}
+
 export default function Testimonials() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [testimonialsHeading, setTestimonialsHeading] = useState<PageHeading | null>(null)
   const [loading, setLoading] = useState(true)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchTestimonials()
+    fetchData()
   }, [])
 
-  const fetchTestimonials = async () => {
+  const fetchData = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: testimonialsData, error: testimonialsError } = await supabase
         .from('testimonials')
         .select('*')
         .order('order_index', { ascending: true })
 
-      if (error) throw error
-      setTestimonials(data || [])
+      const { data: headingData, error: headingError } = await supabase
+        .from('page_headings')
+        .select('*')
+        .eq('page_name', 'testimonials')
+        .maybeSingle()
+
+      if (testimonialsError) throw testimonialsError
+      if (headingError && headingError.code !== 'PGRST116') throw headingError
+
+      setTestimonials(testimonialsData || [])
+      setTestimonialsHeading(headingData || null)
     } catch (err) {
       console.error('Erreur fetch testimonials:', err)
     } finally {
@@ -70,16 +87,14 @@ export default function Testimonials() {
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-[2px] bg-gradient-to-r from-secondary to-transparent" />
             <span className="text-secondary font-semibold text-sm tracking-[0.2em] uppercase">
-              Témoignages
+              {testimonialsHeading?.tag || 'Témoignages'}
             </span>
           </div>
           <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-[1.1]">
-            Ce qu'ils disent
-            <br />
-            <span className="text-gray-400">de nous</span>
+            {testimonialsHeading?.title || 'Ce qu\'ils disent'}
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed">
-            Des vies transformées, des témoignages authentiques
+            {testimonialsHeading?.description || 'Des vies transformées, des témoignages authentiques'}
           </p>
         </motion.div>
 

@@ -16,13 +16,20 @@ interface ShortVideo {
 }
 
 const extractYoutubeVideoId = (url: string): string | null => {
-  const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/
+  if (!url) return null
+  const regex = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|shorts|live)\/|\S*?[?&]v=)|youtu\.be\/|youtube-nocookie\.com\/embed\/)([a-zA-Z0-9_-]{11})/i
   const match = url.match(regex)
-  return match ? match[1] : null
+  if (match && match[1]) return match[1]
+  
+  // Fallback for extremely weird URLs or just the ID itself
+  const idMatch = url.match(/([a-zA-Z0-9_-]{11})/)
+  if (url.length === 11 && idMatch) return url
+  
+  return null
 }
 
 const getYoutubeThumbnail = (videoId: string): string => {
-  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
 }
 
 export default function ShortVideosManager() {
@@ -201,13 +208,8 @@ export default function ShortVideosManager() {
         thumbnail_url: thumbnailUrl,
         duration_seconds: formData.duration_seconds,
         creator: formData.creator,
-      }
-
-      if (videoUrl) {
-        insertData.video_url = videoUrl
-      }
-      if (youtubeUrl) {
-        insertData.youtube_url = youtubeUrl
+        video_url: videoUrl,
+        youtube_url: youtubeUrl
       }
 
       const { error } = await supabase

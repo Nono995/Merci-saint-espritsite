@@ -13,23 +13,56 @@ interface Member {
   image_url: string
 }
 
+interface PageHeading {
+  id: string
+  title: string
+  description: string
+  tag?: string
+}
+
+interface ContentSection {
+  id: string
+  title: string
+  description: string
+  content: string
+}
+
 export default function Community() {
   const [communityMembers, setCommunityMembers] = useState<Member[]>([])
+  const [communityHeading, setCommunityHeading] = useState<PageHeading | null>(null)
+  const [ctaContent, setCtaContent] = useState<ContentSection | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchMembers()
+    fetchData()
   }, [])
 
-  const fetchMembers = async () => {
+  const fetchData = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: membersData, error: membersError } = await supabase
         .from('community_members')
         .select('*')
         .order('order_index', { ascending: true })
 
-      if (error) throw error
-      setCommunityMembers(data || [])
+      const { data: headingData, error: headingError } = await supabase
+        .from('page_headings')
+        .select('*')
+        .eq('page_name', 'community')
+        .maybeSingle()
+
+      const { data: ctaData, error: ctaError } = await supabase
+        .from('content_sections')
+        .select('*')
+        .eq('section_name', 'community_cta')
+        .maybeSingle()
+
+      if (membersError) throw membersError
+      if (headingError && headingError.code !== 'PGRST116') throw headingError
+      if (ctaError && ctaError.code !== 'PGRST116') throw ctaError
+
+      setCommunityMembers(membersData || [])
+      setCommunityHeading(headingData || null)
+      setCtaContent(ctaData || null)
     } catch (err) {
       console.error('Erreur fetch community:', err)
     } finally {
@@ -59,14 +92,14 @@ export default function Community() {
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-secondary/10 to-rose-500/10 px-5 py-2 rounded-full mb-6">
             <Sparkles size={18} className="text-secondary" />
             <span className="font-semibold text-sm tracking-wide text-secondary">
-              Qui Sommes-Nous
+              {communityHeading?.tag || 'Qui Sommes-Nous'}
             </span>
           </div>
           <h2 className="font-display text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            Notre Communauté
+            {communityHeading?.title || 'Notre Communauté'}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Une famille unie par la foi, l'amour et le service
+            {communityHeading?.description || 'Une famille unie par la foi, l\'amour et le service'}
           </p>
         </motion.div>
 
@@ -152,14 +185,14 @@ export default function Community() {
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
                 <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" />
                 <span className="text-secondary font-semibold text-xs tracking-[0.2em] uppercase">
-                  Rejoignez-Nous
+                  {ctaContent?.content || 'Rejoignez-Nous'}
                 </span>
               </div>
               <h3 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                Rejoignez Notre Famille
+                {ctaContent?.title || 'Rejoignez Notre Famille'}
               </h3>
               <p className="text-xl text-gray-300 mb-8">
-                Faites partie d'une communauté qui grandit ensemble dans la foi
+                {ctaContent?.description || "Faites partie d'une communauté qui grandit ensemble dans la foi"}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button className="group relative px-8 py-4 bg-white text-gray-900 font-bold rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105">

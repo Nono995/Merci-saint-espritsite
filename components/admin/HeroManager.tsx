@@ -38,7 +38,7 @@ export default function HeroManager() {
       const { data, error } = await supabase
         .from('hero_content')
         .select('*')
-        .single()
+        .maybeSingle()
 
       if (error && error.code !== 'PGRST116') throw error
       

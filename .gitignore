@@ -8,3 +8,7 @@ build/
 test-results/
 playwright-report/
 .DS_Store
+.zencoder/
+.zenflow/
+*.tsbuildinfo
+

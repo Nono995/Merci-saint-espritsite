@@ -29,7 +29,7 @@ export default function Footer() {
       const { data, error } = await supabase
         .from('social_links')
         .select('*')
-        .single()
+        .maybeSingle()
 
       if (error) throw error
       setSocialLinks(data)

@@ -9,31 +9,48 @@ import { supabase } from '@/lib/supabase'
 interface GalleryItem {
   id: string
   title: string
-  imageUrl: string
+  image_url: string
   category: string
   date: string
   attendees: number
+}
+
+interface PageHeading {
+  id: string
+  title: string
+  description: string
+  tag?: string
 }
 
 export default function Gallery() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null)
   const [activeFilter, setActiveFilter] = useState('Tous')
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
+  const [galleryHeading, setGalleryHeading] = useState<PageHeading | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchGalleryItems()
+    fetchData()
   }, [])
 
-  const fetchGalleryItems = async () => {
+  const fetchData = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: galleryData, error: galleryError } = await supabase
         .from('gallery_items')
         .select('*')
         .order('order_index', { ascending: true })
 
-      if (error) throw error
-      setGalleryItems(data || [])
+      const { data: headingData, error: headingError } = await supabase
+        .from('page_headings')
+        .select('*')
+        .eq('page_name', 'gallery')
+        .maybeSingle()
+
+      if (galleryError) throw galleryError
+      if (headingError && headingError.code !== 'PGRST116') throw headingError
+
+      setGalleryItems(galleryData || [])
+      setGalleryHeading(headingData || null)
     } catch (err) {
       console.error('Erreur fetch gallery:', err)
     } finally {
@@ -42,14 +59,14 @@ export default function Gallery() {
   }
 
   const defaultGalleryItems = [
-    { id: '1', title: 'Moment Spirituel', imageUrl: '/images/img1.jpg', category: 'Culte', date: 'Décembre 2024', attendees: 250 },
-    { id: '2', title: 'Communion', imageUrl: '/images/img2.jpg', category: 'Célébration', date: 'Novembre 2024', attendees: 180 },
-    { id: '3', title: 'Célébration', imageUrl: '/images/img3.jpg', category: 'Événement', date: 'Octobre 2024', attendees: 320 },
-    { id: '4', title: 'Prière', imageUrl: '/images/img1.jpg', category: 'Culte', date: 'Septembre 2024', attendees: 200 },
-    { id: '5', title: 'Enseignement', imageUrl: '/images/img2.jpg', category: 'Formation', date: 'Août 2024', attendees: 150 },
-    { id: '6', title: 'Communauté', imageUrl: '/images/img3.jpg', category: 'Rencontre', date: 'Juillet 2024', attendees: 280 },
-    { id: '7', title: 'Partage', imageUrl: '/images/img1.jpg', category: 'Événement', date: 'Juin 2024', attendees: 190 },
-    { id: '8', title: 'Foi', imageUrl: '/images/img2.jpg', category: 'Culte', date: 'Mai 2024', attendees: 220 },
+    { id: '1', title: 'Moment Spirituel', image_url: '/images/img1.jpg', category: 'Culte', date: 'Décembre 2024', attendees: 250 },
+    { id: '2', title: 'Communion', image_url: '/images/img2.jpg', category: 'Célébration', date: 'Novembre 2024', attendees: 180 },
+    { id: '3', title: 'Célébration', image_url: '/images/img3.jpg', category: 'Événement', date: 'Octobre 2024', attendees: 320 },
+    { id: '4', title: 'Prière', image_url: '/images/img1.jpg', category: 'Culte', date: 'Septembre 2024', attendees: 200 },
+    { id: '5', title: 'Enseignement', image_url: '/images/img2.jpg', category: 'Formation', date: 'Août 2024', attendees: 150 },
+    { id: '6', title: 'Communauté', image_url: '/images/img3.jpg', category: 'Rencontre', date: 'Juillet 2024', attendees: 280 },
+    { id: '7', title: 'Partage', image_url: '/images/img1.jpg', category: 'Événement', date: 'Juin 2024', attendees: 190 },
+    { id: '8', title: 'Foi', image_url: '/images/img2.jpg', category: 'Culte', date: 'Mai 2024', attendees: 220 },
   ]
 
   const displayItems = galleryItems.length > 0 ? galleryItems : defaultGalleryItems
@@ -103,13 +120,15 @@ export default function Gallery() {
         >
           <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary px-4 py-2 rounded-full mb-4">
             <Sparkles size={16} />
-            <span className="font-semibold text-sm tracking-wide">Nos Souvenirs</span>
+            <span className="font-semibold text-sm tracking-wide">
+              {galleryHeading?.tag || 'Nos Souvenirs'}
+            </span>
           </div>
           <h2 className="font-display text-4xl md:text-6xl font-bold text-gray-900 mb-4">
-            Galerie Photos
+            {galleryHeading?.title || 'Galerie Photos'}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Revivez les moments forts de notre communauté
+            {galleryHeading?.description || 'Revivez les moments forts de notre communauté'}
           </p>
         </motion.div>
 
@@ -156,7 +175,7 @@ export default function Gallery() {
                 {/* Image */}
                 <div className="absolute inset-0">
                   <Image
-                    src={item.imageUrl}
+                    src={item.image_url}
                     alt={item.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -243,7 +262,7 @@ export default function Gallery() {
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <div className="relative aspect-video">
                   <Image
-                    src={filteredItems[selectedImage].imageUrl}
+                    src={filteredItems[selectedImage].image_url}
                     alt={filteredItems[selectedImage].title}
                     fill
                     className="object-cover"

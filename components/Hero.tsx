@@ -16,22 +16,28 @@ interface HeroContent {
   members_count: string
 }
 
+interface BiblicalVerse {
+  text: string
+  reference: string
+}
+
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [heroContent, setHeroContent] = useState<HeroContent | null>(null)
-
-  const biblicalVerses = [
+  const [biblicalVerses, setBiblicalVerses] = useState<BiblicalVerse[]>([
     { text: "Car Dieu a tant aimé le monde qu'il a donné son Fils unique, afin que quiconque croit en lui ne périsse point.", reference: "Jean 3:16" },
     { text: "Que la grâce du Seigneur Jésus-Christ, l'amour de Dieu, et la communion du Saint-Esprit soient avec vous tous.", reference: "2 Corinthiens 13:13" },
     { text: "Jésus dit: Je suis le chemin, la vérité, et la vie. Nul ne vient au Père que par moi.", reference: "Jean 14:6" },
     { text: "Confie-toi en l'Éternel de tout ton cœur, et ne t'appuie pas sur ta sagesse.", reference: "Proverbes 3:5" }
-  ]
+  ])
 
   useEffect(() => {
     fetchHeroContent()
+    fetchBiblicalVerses()
   }, [])
 
   useEffect(() => {
+    if (biblicalVerses.length === 0) return
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % biblicalVerses.length)
     }, 5000)
@@ -43,7 +49,7 @@ export default function Hero() {
       const { data, error } = await supabase
         .from('hero_content')
         .select('*')
-        .single()
+        .maybeSingle()
 
       if (error && error.code !== 'PGRST116') {
         console.error('Erreur fetch hero:', error)
@@ -55,6 +61,22 @@ export default function Hero() {
       }
     } catch (err) {
       console.error('Erreur:', err)
+    }
+  }
+
+  const fetchBiblicalVerses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('biblical_verses')
+        .select('text, reference')
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      if (data && data.length > 0) {
+        setBiblicalVerses(data)
+      }
+    } catch (err) {
+      console.error('Erreur fetch verses:', err)
     }
   }
 
@@ -111,14 +133,14 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto min-h-screen lg:h-screen flex flex-col lg:flex-row items-center py-8 lg:py-0">
+      <div className="relative z-10 max-w-7xl mx-auto min-h-[80vh] flex flex-col lg:flex-row items-center py-10 lg:py-0">
         <motion.div
-          className="w-full lg:w-1/2 px-6 sm:px-6 lg:px-12 pt-24 sm:pt-32 lg:pt-0 flex flex-col justify-center items-center lg:items-start"
+          className="w-full lg:w-1/2 px-6 sm:px-6 lg:px-12 pt-16 sm:pt-20 lg:pt-28 flex flex-col justify-center items-center lg:items-start"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.div variants={itemVariants} className="mb-6 lg:mb-10">
+          <motion.div variants={itemVariants} className="mb-4 lg:mb-6">
             <motion.span 
               className="inline-flex items-center gap-2 text-rose-600 font-bold text-xs sm:text-sm tracking-wider uppercase px-4 sm:px-5 py-2 sm:py-3 bg-gradient-to-r from-rose-50 to-orange-50 rounded-full border border-rose-200/50 shadow-soft relative overflow-hidden"
               whileHover={{ scale: 1.05 }}
@@ -152,23 +174,21 @@ export default function Hero() {
             </motion.span>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="mb-6 lg:mb-8 w-full">
-            <div className="flex flex-col items-center lg:items-start gap-1">
-              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight tracking-tight whitespace-nowrap">
+          <motion.div variants={itemVariants} className="mb-4 lg:mb-6 w-full flex flex-col items-center lg:items-start">
+            <div className="inline-flex flex-col items-end">
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-none tracking-tight uppercase">
                 {heroContent?.church_name || 'Merci Saint-Esprit'}
               </h1>
-              <div className="flex justify-center lg:justify-start w-full pl-[55%] sm:pl-[58%] lg:pl-[60%]">
-                <p className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-secondary via-rose-500 to-rose-600 bg-clip-text text-transparent">
-                  {heroContent?.church_subtitle || 'Église'}
-                </p>
-              </div>
+              <p className="font-display text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-secondary via-rose-500 to-rose-600 bg-clip-text text-transparent uppercase tracking-wider">
+                {heroContent?.church_subtitle || 'Église'}
+              </p>
             </div>
           </motion.div>
 
           {/* Decorative Line */}
           <motion.div 
             variants={itemVariants}
-            className="flex items-center gap-3 mb-6 lg:mb-8 w-full justify-center lg:justify-start"
+            className="flex items-center gap-3 mb-4 lg:mb-6 w-full justify-center lg:justify-start"
           >
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-secondary"></div>
             <div className="w-2 h-2 rounded-full bg-secondary"></div>
@@ -177,9 +197,9 @@ export default function Hero() {
 
           <motion.p
             variants={itemVariants}
-            className="text-base sm:text-lg text-gray-600 mb-8 lg:mb-10 leading-relaxed max-w-lg text-center lg:text-left font-light"
+            className="text-sm sm:text-base text-gray-600 mb-6 lg:mb-8 leading-relaxed max-w-lg text-center lg:text-left font-medium"
           >
-            {heroContent?.description || 'Une communauté accueillante où la foi, l\'espérance et la charité se vivent au quotidien. Rejoignez-nous pour des services inspirants et une croissance spirituelle profonde.'}
+            {heroContent?.description || "Une Église née d'un appel divin pour bâtir des vies et transformer des nations par la puissance du Saint-Esprit. Portée par la vision du Pasteur Padre Anderson Kamdem."}
           </motion.p>
 
 
@@ -213,12 +233,12 @@ export default function Hero() {
         </motion.div>
 
         <motion.div
-          className="w-full lg:w-1/2 px-4 sm:px-6 lg:px-0 py-4 sm:py-6 lg:py-20 flex flex-col items-center justify-center relative"
+          className="w-full lg:w-1/2 px-4 sm:px-6 lg:px-0 py-2 sm:py-4 lg:py-8 flex flex-col items-center justify-center relative"
           variants={imageVariants}
           initial="hidden"
           animate="visible"
         >
-          <div className="relative w-full h-[380px] sm:h-[420px] sm:max-w-2xl lg:max-w-none lg:w-5/6 lg:h-[480px]">
+          <div className="relative w-full h-[320px] sm:h-[380px] sm:max-w-2xl lg:max-w-none lg:w-5/6 lg:h-[420px]">
             <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-rose-500/20 rounded-3xl blur-2xl transform scale-105"></div>
             
             <Image

@@ -35,7 +35,7 @@ export default function MissionVisionManager() {
         .from('mission_vision_content')
         .select('*')
         .eq('section_name', 'mission')
-        .single()
+        .maybeSingle()
 
       if (error && error.code !== 'PGRST116') throw error
       if (data) {

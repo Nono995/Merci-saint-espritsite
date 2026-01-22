@@ -17,11 +17,20 @@ interface PageHeading {
   id: string
   title: string
   description: string
+  tag?: string
+}
+
+interface ContentSection {
+  id: string
+  title: string
+  description: string
+  content: string
 }
 
 export default function Services() {
   const [services, setServices] = useState<Service[]>([])
   const [servicesHeading, setServicesHeading] = useState<PageHeading | null>(null)
+  const [visitContent, setVisitContent] = useState<ContentSection | null>(null)
   const [location, setLocation] = useState('123 Rue de la Foi, Ville, Pays')
   const [loading, setLoading] = useState(true)
 
@@ -40,20 +49,28 @@ export default function Services() {
         .from('page_headings')
         .select('*')
         .eq('page_name', 'services')
-        .single()
+        .maybeSingle()
+
+      const { data: visitData, error: visitError } = await supabase
+        .from('content_sections')
+        .select('*')
+        .eq('section_name', 'services_visit')
+        .maybeSingle()
 
       const { data: settingsData, error: settingsError } = await supabase
         .from('settings')
         .select('*')
         .eq('setting_key', 'location_address')
-        .single()
+        .maybeSingle()
 
       if (servicesError) throw servicesError
       if (headingError && headingError.code !== 'PGRST116') throw headingError
+      if (visitError && visitError.code !== 'PGRST116') throw visitError
       if (settingsError && settingsError.code !== 'PGRST116') console.warn('Settings non trouvés')
 
       setServices(servicesData || [])
       setServicesHeading(headingData || null)
+      setVisitContent(visitData || null)
       if (settingsData) setLocation(settingsData.setting_value)
     } catch (err) {
       console.error('Erreur fetch services:', err)
@@ -96,7 +113,7 @@ export default function Services() {
             <div className="inline-flex items-center gap-2 bg-secondary/10 px-5 py-2 rounded-full">
               <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
               <span className="text-secondary font-semibold text-sm tracking-[0.2em] uppercase">
-                Nos Horaires
+                {servicesHeading?.tag || 'Nos Horaires'}
               </span>
             </div>
           </motion.div>
@@ -197,11 +214,11 @@ export default function Services() {
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
               <span className="w-1.5 h-1.5 bg-secondary rounded-full animate-pulse" />
               <span className="text-secondary font-semibold text-xs tracking-[0.2em] uppercase">
-                Localisation
+                {visitContent?.content || 'Localisation'}
               </span>
             </div>
             <h3 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white leading-tight">
-              Venez Nous Rendre Visite
+              {visitContent?.title || 'Venez Nous Rendre Visite'}
             </h3>
             <div className="flex items-center justify-center gap-3 mb-8">
               <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
@@ -210,7 +227,7 @@ export default function Services() {
               <p className="text-lg text-white/90">{location}</p>
             </div>
             <button className="bg-gradient-to-r from-secondary to-rose-500 text-white font-bold px-10 py-4 rounded-xl hover:shadow-strong transition-all duration-300 transform hover:scale-105">
-              Voir sur la carte
+              {visitContent?.description || 'Voir sur la carte'}
             </button>
           </div>
         </motion.div>
