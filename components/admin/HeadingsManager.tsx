@@ -191,7 +191,7 @@ export default function HeadingsManager() {
               type="button"
               onClick={() => {
                 setEditingId(null)
-                setFormData({ page_name: '', title: '', description: '' })
+                setFormData({ page_name: '', title: '', description: '', tag: '' })
               }}
               className="bg-gray-600 hover:bg-gray-500 px-6 py-2 rounded-lg font-semibold transition"
             >
