@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Pause, Volume2, User, RotateCcw, RotateCw, FastForward, Download, VolumeX } from 'lucide-react'
+import { Play, Pause, Volume2, User, RotateCcw, RotateCw, FastForward, Download, VolumeX, X, Calendar, Share2 } from 'lucide-react'
 import Image from 'next/image'
 import { useState, useRef, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
@@ -31,6 +31,7 @@ export default function Podcasts() {
   const [loading, setLoading] = useState(true)
   const [playingId, setPlayingId] = useState<string | null>(null)
   const [currentTime, setCurrentTime] = useState<Record<string, number>>({})
+  const [duration, setDuration] = useState<Record<string, number>>({})
   const [volume, setVolume] = useState<Record<string, number>>({})
   const [playbackRate, setPlaybackRate] = useState<Record<string, number>>({})
   const [showVolume, setShowVolume] = useState<string | null>(null)
@@ -88,8 +89,16 @@ export default function Podcasts() {
       Object.entries(audioRefs.current).forEach(([pid, a]) => {
         if (pid !== id && a) a.pause()
       })
+      
       audio.play()
       setPlayingId(id)
+    }
+  }
+
+  const handleLoadedMetadata = (id: string) => {
+    const audio = audioRefs.current[id]
+    if (audio) {
+      setDuration(prev => ({ ...prev, [id]: audio.duration }))
     }
   }
 
@@ -240,26 +249,26 @@ export default function Podcasts() {
                   
                   {/* Audio Wave Icon */}
                   <div className="absolute top-3 left-3 bg-secondary/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <svg className={`w-4 h-4 ${playingId === podcast.id ? 'text-white' : 'text-white/50'}`} viewBox="0 0 24 24" fill="currentColor">
                       <rect x="2" y="8" width="2" height="8" rx="1">
-                        <animate attributeName="height" values="8;16;8" dur="1s" repeatCount="indefinite" />
-                        <animate attributeName="y" values="8;4;8" dur="1s" repeatCount="indefinite" />
+                        {playingId === podcast.id && <animate attributeName="height" values="8;16;8" dur="1s" repeatCount="indefinite" />}
+                        {playingId === podcast.id && <animate attributeName="y" values="8;4;8" dur="1s" repeatCount="indefinite" />}
                       </rect>
                       <rect x="6" y="6" width="2" height="12" rx="1">
-                        <animate attributeName="height" values="12;20;12" dur="1s" begin="0.2s" repeatCount="indefinite" />
-                        <animate attributeName="y" values="6;2;6" dur="1s" begin="0.2s" repeatCount="indefinite" />
+                        {playingId === podcast.id && <animate attributeName="height" values="12;20;12" dur="1s" begin="0.2s" repeatCount="indefinite" />}
+                        {playingId === podcast.id && <animate attributeName="y" values="6;2;6" dur="1s" begin="0.2s" repeatCount="indefinite" />}
                       </rect>
                       <rect x="10" y="4" width="2" height="16" rx="1">
-                        <animate attributeName="height" values="16;22;16" dur="1s" begin="0.4s" repeatCount="indefinite" />
-                        <animate attributeName="y" values="4;1;4" dur="1s" begin="0.4s" repeatCount="indefinite" />
+                        {playingId === podcast.id && <animate attributeName="height" values="16;22;16" dur="1s" begin="0.4s" repeatCount="indefinite" />}
+                        {playingId === podcast.id && <animate attributeName="y" values="4;1;4" dur="1s" begin="0.4s" repeatCount="indefinite" />}
                       </rect>
                       <rect x="14" y="6" width="2" height="12" rx="1">
-                        <animate attributeName="height" values="12;18;12" dur="1s" begin="0.6s" repeatCount="indefinite" />
-                        <animate attributeName="y" values="6;3;6" dur="1s" begin="0.6s" repeatCount="indefinite" />
+                        {playingId === podcast.id && <animate attributeName="height" values="12;18;12" dur="1s" begin="0.6s" repeatCount="indefinite" />}
+                        {playingId === podcast.id && <animate attributeName="y" values="6;3;6" dur="1s" begin="0.6s" repeatCount="indefinite" />}
                       </rect>
                       <rect x="18" y="8" width="2" height="8" rx="1">
-                        <animate attributeName="height" values="8;14;8" dur="1s" begin="0.8s" repeatCount="indefinite" />
-                        <animate attributeName="y" values="8;5;8" dur="1s" begin="0.8s" repeatCount="indefinite" />
+                        {playingId === podcast.id && <animate attributeName="height" values="8;14;8" dur="1s" begin="0.8s" repeatCount="indefinite" />}
+                        {playingId === podcast.id && <animate attributeName="y" values="8;5;8" dur="1s" begin="0.8s" repeatCount="indefinite" />}
                       </rect>
                     </svg>
                     AUDIO
@@ -277,16 +286,37 @@ export default function Podcasts() {
                         <span className="text-xs font-bold text-secondary uppercase tracking-wider bg-secondary/10 px-3 py-1 rounded-full">
                           {podcast.episode}
                         </span>
-                        <span className="text-xs text-gray-500">{podcast.date}</span>
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Calendar size={12} className="text-secondary/60" />
+                          <span>{podcast.date}</span>
+                        </div>
                       </div>
-                      <a 
-                        href={podcast.audio_url} 
-                        download 
-                        className="p-2 text-gray-400 hover:text-secondary transition-colors"
-                        title="Télécharger"
-                      >
-                        <Download size={18} />
-                      </a>
+                        <div className="flex items-center gap-1">
+                          <button 
+                            onClick={() => {
+                              navigator.share?.({
+                                title: podcast.title,
+                                text: podcast.description,
+                                url: window.location.href + '#podcasts'
+                              }).catch(() => {
+                                navigator.clipboard.writeText(window.location.href + '#podcasts');
+                                alert('Lien copié !');
+                              });
+                            }}
+                            className="p-2 text-gray-400 hover:text-secondary transition-colors"
+                            title="Partager"
+                          >
+                            <Share2 size={18} />
+                          </button>
+                          <a 
+                            href={podcast.audio_url} 
+                            download 
+                            className="p-2 text-gray-400 hover:text-secondary transition-colors"
+                            title="Télécharger"
+                          >
+                            <Download size={18} />
+                          </a>
+                        </div>
                     </div>
                     <h3 className="font-display text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">
                       {podcast.title}
@@ -301,40 +331,41 @@ export default function Podcasts() {
                   </div>
 
                   {/* Audio Player */}
-                  <div className="bg-gray-50 rounded-2xl p-4 md:p-6 space-y-4">
+                  <div className="bg-gray-50/50 rounded-xl p-3 md:p-4 space-y-3 border border-gray-100/50">
                     <audio
                       ref={(el) => { audioRefs.current[podcast.id] = el }}
                       src={podcast.audio_url}
+                      onLoadedMetadata={() => handleLoadedMetadata(podcast.id)}
                       onTimeUpdate={() => handleTimeUpdate(podcast.id)}
                       onEnded={() => setPlayingId(null)}
                       preload="metadata"
                     />
                     
-                    <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-                      <div className="flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-4">
+                      <div className="flex items-center gap-2">
                         <button 
                           onClick={() => skip(podcast.id, -15)}
-                          className="p-2 text-gray-400 hover:text-secondary transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-secondary transition-colors"
                         >
-                          <RotateCcw size={20} />
+                          <RotateCcw size={16} />
                         </button>
                         
                         <button
                           onClick={() => togglePlay(podcast.id)}
-                          className="w-12 h-12 bg-gradient-to-r from-secondary to-rose-500 rounded-full flex items-center justify-center text-white hover:shadow-strong transition-all duration-300 transform hover:scale-105"
+                          className="w-10 h-10 bg-gradient-to-r from-secondary to-rose-500 rounded-full flex items-center justify-center text-white hover:shadow-strong transition-all duration-300 transform hover:scale-105 shadow-sm"
                         >
                           {playingId === podcast.id ? (
-                            <Pause size={22} fill="currentColor" />
+                            <Pause size={18} fill="currentColor" />
                           ) : (
-                            <Play size={22} className="ml-1" fill="currentColor" />
+                            <Play size={18} className="ml-1" fill="currentColor" />
                           )}
                         </button>
 
                         <button 
                           onClick={() => skip(podcast.id, 15)}
-                          className="p-2 text-gray-400 hover:text-secondary transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-secondary transition-colors"
                         >
-                          <RotateCw size={20} />
+                          <RotateCw size={16} />
                         </button>
                       </div>
 
@@ -342,44 +373,44 @@ export default function Podcasts() {
                         <input
                           type="range"
                           min="0"
-                          max={podcast.duration_seconds || 100}
+                          max={duration[podcast.id] || podcast.duration_seconds || 100}
                           value={currentTime[podcast.id] || 0}
                           onChange={(e) => handleSeek(podcast.id, Number(e.target.value))}
-                          className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-secondary transition-all hover:h-2"
+                          className="w-full h-1 bg-gray-200 rounded-full appearance-none cursor-pointer accent-secondary transition-all hover:h-1.5"
                         />
-                        <div className="flex justify-between text-[10px] md:text-xs font-medium text-gray-500">
+                        <div className="flex justify-between text-[10px] font-semibold text-gray-400">
                           <span>{formatTime(currentTime[podcast.id] || 0)}</span>
-                          <span>{formatTime(podcast.duration_seconds)}</span>
+                          <span>{formatTime(duration[podcast.id] || podcast.duration_seconds)}</span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         <button
                           onClick={() => handleRateChange(podcast.id)}
-                          className="text-xs font-bold text-gray-500 hover:text-secondary w-10 text-center bg-gray-200 py-1 rounded-md"
+                          className="text-[10px] font-bold text-gray-500 hover:text-secondary w-9 py-1 bg-white border border-gray-200 rounded-md shadow-sm transition-colors"
                         >
                           {playbackRate[podcast.id] || 1}x
                         </button>
 
                         <div 
-                          className="relative flex items-center"
+                          className="relative flex items-center gap-1"
                           onMouseEnter={() => setShowVolume(podcast.id)}
                           onMouseLeave={() => setShowVolume(null)}
                         >
                           <button 
-                            className="p-2 text-gray-500 hover:text-secondary transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-secondary transition-colors"
                             onClick={() => handleVolumeChange(podcast.id, volume[podcast.id] === 0 ? 1 : 0)}
                           >
-                            {(volume[podcast.id] || 1) === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                            {(volume[podcast.id] || 1) === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
                           </button>
                           
                           <AnimatePresence>
                             {showVolume === podcast.id && (
                               <motion.div
                                 initial={{ opacity: 0, width: 0 }}
-                                animate={{ opacity: 1, width: 80 }}
+                                animate={{ opacity: 1, width: 60 }}
                                 exit={{ opacity: 0, width: 0 }}
-                                className="overflow-hidden"
+                                className="overflow-hidden flex items-center"
                               >
                                 <input
                                   type="range"
@@ -388,7 +419,7 @@ export default function Podcasts() {
                                   step="0.01"
                                   value={volume[podcast.id] ?? 1}
                                   onChange={(e) => handleVolumeChange(podcast.id, parseFloat(e.target.value))}
-                                  className="w-20 h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-secondary"
+                                  className="w-16 h-1 bg-gray-200 rounded-full appearance-none cursor-pointer accent-secondary"
                                 />
                               </motion.div>
                             )}
@@ -403,6 +434,7 @@ export default function Podcasts() {
           ))}
         </motion.div>
       </div>
+
     </section>
   )
 }

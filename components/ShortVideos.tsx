@@ -261,7 +261,21 @@ export default function ShortVideos() {
                           <p className="text-[10px] text-gray-500">{video.views || '—'} vues • {video.date || 'Récent'}</p>
                         </div>
                       </div>
-                      <button className="text-gray-400 hover:text-secondary transition-colors flex-shrink-0 ml-2">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigator.share?.({
+                            title: video.title,
+                            text: video.description,
+                            url: window.location.href + '#videos'
+                          }).catch(() => {
+                            navigator.clipboard.writeText(window.location.href + '#videos');
+                            alert('Lien copié !');
+                          });
+                        }}
+                        className="text-gray-400 hover:text-secondary transition-colors flex-shrink-0 ml-2"
+                        title="Partager"
+                      >
                         <Share2 size={14} />
                       </button>
                     </div>

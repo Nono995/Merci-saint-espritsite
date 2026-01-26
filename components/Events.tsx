@@ -11,6 +11,7 @@ interface Event {
   date: string
   title: string
   description: string
+  location: string
   attendees: string
   image_url: string
 }
@@ -61,6 +62,7 @@ export default function Events() {
       date: '15 Décembre',
       title: 'Célébration de Noël',
       description: 'Une célébration spéciale de la naissance du Christ avec musique et festif',
+      location: 'Auditorium Principal',
       attendees: '500+',
       image_url: '/images/img1.jpg',
     },
@@ -68,6 +70,7 @@ export default function Events() {
       date: '22 Décembre',
       title: 'Concert de Chants Sacrés',
       description: 'Soirée musicale inspirante avec l\'orchestre de notre église',
+      location: 'Chapelle latérale',
       attendees: '300+',
       image_url: '/images/img2.jpg',
     },
@@ -75,6 +78,7 @@ export default function Events() {
       date: '5 Janvier',
       title: 'Retraite Spirituelle',
       description: 'Weekend de méditation et de croissance spirituelle en montagne',
+      location: 'Centre de Retraite',
       attendees: '150+',
       image_url: '/images/img3.jpg',
     },
@@ -82,6 +86,7 @@ export default function Events() {
       date: '20 Janvier',
       title: 'Conférence Jeunesse',
       description: 'Rencontre des jeunes avec des orateurs inspirants',
+      location: 'Salle Polyvalente',
       attendees: '200+',
       image_url: '/images/img1.jpg',
     },
@@ -163,9 +168,17 @@ export default function Events() {
                 </div>
                 <div className="flex-1 p-8 flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Calendar className="w-5 h-5 text-secondary" />
-                      <span className="text-secondary font-semibold">{event.date}</span>
+                    <div className="flex flex-wrap items-center gap-4 mb-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-secondary" />
+                        <span className="text-secondary font-semibold">{event.date}</span>
+                      </div>
+                      {event.location && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-5 h-5 text-secondary/70" />
+                          <span className="text-light/80 text-sm">{event.location}</span>
+                        </div>
+                      )}
                     </div>
                     <h3 className="text-2xl md:text-3xl font-bold text-light mb-3 leading-tight">
                   {event.title}

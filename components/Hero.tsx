@@ -135,7 +135,7 @@ export default function Hero() {
 
       <div className="relative z-10 max-w-7xl mx-auto min-h-[80vh] flex flex-col lg:flex-row items-center py-10 lg:py-0">
         <motion.div
-          className="w-full lg:w-1/2 px-6 sm:px-6 lg:px-12 pt-16 sm:pt-20 lg:pt-28 flex flex-col justify-center items-center lg:items-start"
+          className="w-full lg:w-1/2 px-6 sm:px-6 lg:px-12 pt-24 sm:pt-28 lg:pt-32 flex flex-col justify-center items-center lg:items-start"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
